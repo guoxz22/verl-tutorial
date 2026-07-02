@@ -1,7 +1,7 @@
 # 05-4 - RLOO / ReMax 详解
 
 <!-- NAV_START -->
-> 阅读： [← 05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md) · [目录](../../README.md#完整目录) · [05-5 - 其他算法 →](05-5-other-algos.md)
+> 阅读： [← 05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md) · [目录](../../README.md#catalog) · [05-5 - 其他算法 →](05-5-other-algos.md)
 <!-- NAV_END -->
 
 本章详细介绍 RLOO 和 ReMax 算法的使用。
@@ -196,5 +196,5 @@ python -m verl.trainer.main_ppo \
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md) · [目录](../../README.md#完整目录) · [05-5 - 其他算法 →](05-5-other-algos.md)
+> 阅读： [← 05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md) · [目录](../../README.md#catalog) · [05-5 - 其他算法 →](05-5-other-algos.md)
 <!-- NAV_BOTTOM_END -->

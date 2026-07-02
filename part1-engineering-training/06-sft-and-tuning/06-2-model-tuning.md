@@ -1,7 +1,7 @@
 # 06-2 - 模型规模与调参
 
 <!-- NAV_START -->
-> 阅读： [← 06-1 - SFT 基础训练](06-1-sft-basics.md) · [目录](../../README.md#完整目录) · [07-1 - Tool Calling 训练 →](../07-agent-rl/07-1-tool-calling.md)
+> 阅读： [← 06-1 - SFT 基础训练](06-1-sft-basics.md) · [目录](../../README.md#catalog) · [07-1 - Tool Calling 训练 →](../07-agent-rl/07-1-tool-calling.md)
 <!-- NAV_END -->
 
 不同规模的模型需要不同的配置策略。
@@ -220,5 +220,5 @@ python -m verl.trainer.main_ppo \
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 06-1 - SFT 基础训练](06-1-sft-basics.md) · [目录](../../README.md#完整目录) · [07-1 - Tool Calling 训练 →](../07-agent-rl/07-1-tool-calling.md)
+> 阅读： [← 06-1 - SFT 基础训练](06-1-sft-basics.md) · [目录](../../README.md#catalog) · [07-1 - Tool Calling 训练 →](../07-agent-rl/07-1-tool-calling.md)
 <!-- NAV_BOTTOM_END -->

@@ -1,7 +1,7 @@
 # 14-2 - 案例研究
 
 <!-- NAV_START -->
-> 阅读： [← 14-1 - 论文复现工作流](14-1-reproduce-workflow.md) · [目录](../../README.md#完整目录) · [A - 配置参数参考 →](../../appendix/A-config-reference.md)
+> 阅读： [← 14-1 - 论文复现工作流](14-1-reproduce-workflow.md) · [目录](../../README.md#catalog) · [A - 配置参数参考 →](../../appendix/A-config-reference.md)
 <!-- NAV_END -->
 
 本章给出“如何把论文映射到 verl v0.8.0”的案例。重点不是复制某个固定脚本，而是学会找到官方入口、确认配置键、做最小复现。
@@ -132,5 +132,5 @@ actor_rollout_ref.rollout.agent.default_agent_loop=tool_agent
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 14-1 - 论文复现工作流](14-1-reproduce-workflow.md) · [目录](../../README.md#完整目录) · [A - 配置参数参考 →](../../appendix/A-config-reference.md)
+> 阅读： [← 14-1 - 论文复现工作流](14-1-reproduce-workflow.md) · [目录](../../README.md#catalog) · [A - 配置参数参考 →](../../appendix/A-config-reference.md)
 <!-- NAV_BOTTOM_END -->

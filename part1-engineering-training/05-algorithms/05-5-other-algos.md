@@ -1,7 +1,7 @@
 # 05-5 - 其他算法
 
 <!-- NAV_START -->
-> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#完整目录) · [06-1 - SFT 基础训练 →](../06-sft-and-tuning/06-1-sft-basics.md)
+> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#catalog) · [06-1 - SFT 基础训练 →](../06-sft-and-tuning/06-1-sft-basics.md)
 <!-- NAV_END -->
 
 本章不把所有算法写成论文综述，而是帮助读者在 v0.8.0 的官方示例目录中找到正确入口，并区分每个算法到底改的是 `adv_estimator` 还是 `policy_loss.loss_mode`。
@@ -101,5 +101,5 @@ ls recipe
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#完整目录) · [06-1 - SFT 基础训练 →](../06-sft-and-tuning/06-1-sft-basics.md)
+> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#catalog) · [06-1 - SFT 基础训练 →](../06-sft-and-tuning/06-1-sft-basics.md)
 <!-- NAV_BOTTOM_END -->

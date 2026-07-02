@@ -1,7 +1,7 @@
 # 02 - 快速上手
 
 <!-- NAV_START -->
-> 阅读： [← 01 - 安装与配置](01-installation.md) · [目录](../README.md#完整目录) · [03 - 核心概念 →](03-core-concepts.md)
+> 阅读： [← 01 - 安装与配置](01-installation.md) · [目录](../README.md#catalog) · [03 - 核心概念 →](03-core-concepts.md)
 <!-- NAV_END -->
 
 本章用 5 分钟跑通第一个 GRPO 训练任务。
@@ -236,5 +236,5 @@ python -m verl.trainer.main_ppo \
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 01 - 安装与配置](01-installation.md) · [目录](../README.md#完整目录) · [03 - 核心概念 →](03-core-concepts.md)
+> 阅读： [← 01 - 安装与配置](01-installation.md) · [目录](../README.md#catalog) · [03 - 核心概念 →](03-core-concepts.md)
 <!-- NAV_BOTTOM_END -->

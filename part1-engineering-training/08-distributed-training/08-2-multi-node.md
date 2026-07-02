@@ -1,7 +1,7 @@
 # 08-2 - 多机训练
 
 <!-- NAV_START -->
-> 阅读： [← 08-1 - 单机多卡训练](08-1-single-node.md) · [目录](../../README.md#完整目录) · [08-3 - 训练后端选择 →](08-3-backends.md)
+> 阅读： [← 08-1 - 单机多卡训练](08-1-single-node.md) · [目录](../../README.md#catalog) · [08-3 - 训练后端选择 →](08-3-backends.md)
 <!-- NAV_END -->
 
 本章介绍多机分布式训练配置。
@@ -168,5 +168,5 @@ python -c "import torch; print(torch.distributed.is_nccl_available())"
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 08-1 - 单机多卡训练](08-1-single-node.md) · [目录](../../README.md#完整目录) · [08-3 - 训练后端选择 →](08-3-backends.md)
+> 阅读： [← 08-1 - 单机多卡训练](08-1-single-node.md) · [目录](../../README.md#catalog) · [08-3 - 训练后端选择 →](08-3-backends.md)
 <!-- NAV_BOTTOM_END -->

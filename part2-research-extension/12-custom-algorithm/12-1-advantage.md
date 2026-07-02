@@ -1,7 +1,7 @@
 # 12-1 - 扩展 Advantage Estimator
 
 <!-- NAV_START -->
-> 阅读： [← 11 - 扩展机制总览](../11-extension-overview.md) · [目录](../../README.md#完整目录) · [12-2 - 自定义 Policy Loss →](12-2-policy-loss.md)
+> 阅读： [← 11 - 扩展机制总览](../11-extension-overview.md) · [目录](../../README.md#catalog) · [12-2 - 自定义 Policy Loss →](12-2-policy-loss.md)
 <!-- NAV_END -->
 
 本章详细介绍如何实现自定义 Advantage Estimator。
@@ -216,5 +216,5 @@ if __name__ == "__main__":
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 11 - 扩展机制总览](../11-extension-overview.md) · [目录](../../README.md#完整目录) · [12-2 - 自定义 Policy Loss →](12-2-policy-loss.md)
+> 阅读： [← 11 - 扩展机制总览](../11-extension-overview.md) · [目录](../../README.md#catalog) · [12-2 - 自定义 Policy Loss →](12-2-policy-loss.md)
 <!-- NAV_BOTTOM_END -->

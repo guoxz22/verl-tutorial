@@ -1,7 +1,7 @@
 # 09-2 - 自定义数据集
 
 <!-- NAV_START -->
-> 阅读： [← 09-1 - 数据预处理](09-1-data-preprocess.md) · [目录](../../README.md#完整目录) · [09-3 - 奖励配置 →](09-3-reward-config.md)
+> 阅读： [← 09-1 - 数据预处理](09-1-data-preprocess.md) · [目录](../../README.md#catalog) · [09-3 - 奖励配置 →](09-3-reward-config.md)
 <!-- NAV_END -->
 
 本章介绍如何创建和使用自定义数据集。
@@ -104,5 +104,5 @@ python -m verl.trainer.main_ppo \
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 09-1 - 数据预处理](09-1-data-preprocess.md) · [目录](../../README.md#完整目录) · [09-3 - 奖励配置 →](09-3-reward-config.md)
+> 阅读： [← 09-1 - 数据预处理](09-1-data-preprocess.md) · [目录](../../README.md#catalog) · [09-3 - 奖励配置 →](09-3-reward-config.md)
 <!-- NAV_BOTTOM_END -->

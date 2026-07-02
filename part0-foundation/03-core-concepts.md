@@ -1,7 +1,7 @@
 # 03 - 核心概念
 
 <!-- NAV_START -->
-> 阅读： [← 02 - 快速上手](02-quick-start.md) · [目录](../README.md#完整目录) · [04 - 配置系统 →](04-configuration.md)
+> 阅读： [← 02 - 快速上手](02-quick-start.md) · [目录](../README.md#catalog) · [04 - 配置系统 →](04-configuration.md)
 <!-- NAV_END -->
 
 理解 verl 的核心抽象是使用和扩展框架的基础。
@@ -290,5 +290,5 @@ actor_rollout_ref.model.path=/path/to/megatron/checkpoint
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 02 - 快速上手](02-quick-start.md) · [目录](../README.md#完整目录) · [04 - 配置系统 →](04-configuration.md)
+> 阅读： [← 02 - 快速上手](02-quick-start.md) · [目录](../README.md#catalog) · [04 - 配置系统 →](04-configuration.md)
 <!-- NAV_BOTTOM_END -->

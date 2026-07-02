@@ -1,7 +1,7 @@
 # 01 - 安装与配置
 
 <!-- NAV_START -->
-> 阅读： [← 00 - 什么是 verl](00-what-is-verl.md) · [目录](../README.md#完整目录) · [02 - 快速上手 →](02-quick-start.md)
+> 阅读： [← 00 - 什么是 verl](00-what-is-verl.md) · [目录](../README.md#catalog) · [02 - 快速上手 →](02-quick-start.md)
 <!-- NAV_END -->
 
 本章给出一套能复现 v0.8.0 示例的安装路线，并说明何时使用 Docker，何时手动配置环境。
@@ -119,5 +119,5 @@ critic.model.path=/path/to/model
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 00 - 什么是 verl](00-what-is-verl.md) · [目录](../README.md#完整目录) · [02 - 快速上手 →](02-quick-start.md)
+> 阅读： [← 00 - 什么是 verl](00-what-is-verl.md) · [目录](../README.md#catalog) · [02 - 快速上手 →](02-quick-start.md)
 <!-- NAV_BOTTOM_END -->
