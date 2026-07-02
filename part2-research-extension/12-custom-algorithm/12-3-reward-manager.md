@@ -1,5 +1,9 @@
 # 12-3 - 自定义 Reward Manager
 
+<!-- NAV_START -->
+> 导航： [上一篇：12-2 - 自定义 Policy Loss](12-2-policy-loss.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-4 - 完整算法实现示例](12-4-full-example.md)
+<!-- NAV_END -->
+
 Reward Manager 控制“如何把一批 rollout 样本变成 reward tensor”。v0.8.0 的注册器是：
 
 ```python
@@ -71,7 +75,7 @@ python -m verl.trainer.main_ppo \
   reward.reward_manager.name=my_custom_rm
 ```
 
-如果你的 manager 放在独立文件里，需要保证模块被 import。更稳妥的方式是做成 package，在 `__init__.py` 里 import 注册类。
+若 manager 放在独立文件里，需要保证模块被 import。更稳妥的方式是做成 package，在 `__init__.py` 里 import 注册类。
 
 ## 何时写 Reward Function，何时写 Reward Manager
 
@@ -103,3 +107,9 @@ reward.reward_manager.name=prime
 | reward 全 0 | 检查 `reward_model.ground_truth` 是否存在 |
 | shape 不匹配 | reward tensor 应与 `responses` 对齐 |
 | 多进程下状态丢失 | 不要依赖进程内全局变量保存跨 batch 状态 |
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：12-2 - 自定义 Policy Loss](12-2-policy-loss.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-4 - 完整算法实现示例](12-4-full-example.md)
+<!-- NAV_BOTTOM_END -->

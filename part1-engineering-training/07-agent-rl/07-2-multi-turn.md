@@ -1,5 +1,9 @@
 # 07-2 - 多轮对话 RL 训练
 
+<!-- NAV_START -->
+> 导航： [上一篇：07-1 - Tool Calling 训练](07-1-tool-calling.md) | [返回目录](../../README.md#完整目录) | [下一篇：07-3 - Agent Loop 训练](07-3-agent-loop.md)
+<!-- NAV_END -->
+
 多轮 RL 解决的是：一次样本不再只有 `prompt -> response`，而是可能包含多轮 assistant、tool、user 交互。v0.8.0 把这部分统一放在 `actor_rollout_ref.rollout.multi_turn` 下。
 
 ## 最小配置
@@ -50,7 +54,7 @@ actor_rollout_ref.rollout.multi_turn.tokenization_sanity_check_mode=strict
 
 - `strict`：严格检查，适合新任务调试。
 - `ignore_strippable`：忽略空白字符差异。
-- `disable`：关闭检查，只在你确认 chat template 行为可靠时使用。
+- `disable`：关闭检查，只在 chat template 行为已确认可靠时使用。
 
 ## 多轮长度控制
 
@@ -90,3 +94,9 @@ actor_rollout_ref.rollout.multi_turn.tool.dict.python_executor=true
 ```
 
 v0.8.0 的 server/async 能力由 rollout `mode`、后端适配器、`agent` 和 `multi_turn` 子配置共同控制，不再用这个旧字段表达。
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：07-1 - Tool Calling 训练](07-1-tool-calling.md) | [返回目录](../../README.md#完整目录) | [下一篇：07-3 - Agent Loop 训练](07-3-agent-loop.md)
+<!-- NAV_BOTTOM_END -->

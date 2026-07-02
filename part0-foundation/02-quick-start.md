@@ -1,6 +1,10 @@
 # 02 - 快速上手
 
-本章带你用 5 分钟运行第一个 GRPO 训练任务。
+<!-- NAV_START -->
+> 导航： [上一篇：01 - 安装与配置](01-installation.md) | [返回目录](../README.md#完整目录) | [下一篇：03 - 核心概念](03-core-concepts.md)
+<!-- NAV_END -->
+
+本章用 5 分钟跑通第一个 GRPO 训练任务。
 
 ## 前置准备
 
@@ -228,3 +232,9 @@ python -m verl.trainer.main_ppo \
 - 阅读 [03-core-concepts.md](03-core-concepts.md) 理解 verl 的核心概念
 - 阅读 [04-configuration.md](04-configuration.md) 深入了解配置系统
 - 查看 `examples/` 目录了解更多示例
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：01 - 安装与配置](01-installation.md) | [返回目录](../README.md#完整目录) | [下一篇：03 - 核心概念](03-core-concepts.md)
+<!-- NAV_BOTTOM_END -->

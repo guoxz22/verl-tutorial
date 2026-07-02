@@ -1,5 +1,9 @@
 # 13-2 - 修改 Critic Worker
 
+<!-- NAV_START -->
+> 导航： [上一篇：13-1 - 修改 Actor Worker](13-1-actor-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：13-3 - 修改 Rollout Worker](13-3-rollout-worker.md)
+<!-- NAV_END -->
+
 Critic 负责估计 value，并在 PPO/GAE 这类 actor-critic 算法中提供 baseline。GRPO、RLOO、ReMax 等 critic-free 方法通常不需要改 Critic。
 
 ## v0.8.0 中 Critic 在哪里
@@ -83,3 +87,9 @@ Critic 改动容易影响：
 
 - [13-3-rollout-worker.md](13-3-rollout-worker.md)
 - [12-1-advantage.md](../12-custom-algorithm/12-1-advantage.md)
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：13-1 - 修改 Actor Worker](13-1-actor-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：13-3 - 修改 Rollout Worker](13-3-rollout-worker.md)
+<!-- NAV_BOTTOM_END -->

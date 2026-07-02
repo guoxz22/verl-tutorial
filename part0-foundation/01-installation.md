@@ -1,6 +1,10 @@
 # 01 - 安装与配置
 
-本章目标：给你一套能复现 v0.8.0 示例的安装路线，并说明什么时候该用 Docker，什么时候可以自己配环境。
+<!-- NAV_START -->
+> 导航： [上一篇：00 - 什么是 verl](00-what-is-verl.md) | [返回目录](../README.md#完整目录) | [下一篇：02 - 快速上手](02-quick-start.md)
+<!-- NAV_END -->
+
+本章给出一套能复现 v0.8.0 示例的安装路线，并说明何时使用 Docker，何时手动配置环境。
 
 ## 环境要求
 
@@ -39,7 +43,7 @@ git checkout v0.8.0
 pip install --no-deps -e .
 ```
 
-如果你需要自己安装 inference 依赖：
+若需要自行安装 inference 依赖：
 
 ```bash
 pip install -e ".[vllm]"
@@ -111,3 +115,9 @@ critic.model.path=/path/to/model
 
 - [02-quick-start.md](02-quick-start.md) - 跑通最小 PPO/GRPO 示例
 - [04-configuration.md](04-configuration.md) - 理解 Hydra 配置树
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：00 - 什么是 verl](00-what-is-verl.md) | [返回目录](../README.md#完整目录) | [下一篇：02 - 快速上手](02-quick-start.md)
+<!-- NAV_BOTTOM_END -->

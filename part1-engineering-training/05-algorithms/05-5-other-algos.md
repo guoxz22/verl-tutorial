@@ -1,6 +1,10 @@
 # 05-5 - 其他算法
 
-本章不是把所有算法讲成论文综述，而是帮你在 v0.8.0 的官方示例目录中找到正确入口，并知道每个算法到底改的是 `adv_estimator` 还是 `policy_loss.loss_mode`。
+<!-- NAV_START -->
+> 导航： [上一篇：05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) | [返回目录](../../README.md#完整目录) | [下一篇：06-1 - SFT 基础训练](../06-sft-and-tuning/06-1-sft-basics.md)
+<!-- NAV_END -->
+
+本章不把所有算法写成论文综述，而是帮助读者在 v0.8.0 的官方示例目录中找到正确入口，并区分每个算法到底改的是 `adv_estimator` 还是 `policy_loss.loss_mode`。
 
 ## v0.8.0 算法目录
 
@@ -93,3 +97,9 @@ ls recipe
 2. 再看 PPO，理解 critic 与 value loss。
 3. 然后区分两类扩展：只改 advantage 的算法，以及只改 policy loss 的算法。
 4. 最后再研究 MTP、on-policy distillation、fully async 等高级能力。
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) | [返回目录](../../README.md#完整目录) | [下一篇：06-1 - SFT 基础训练](../06-sft-and-tuning/06-1-sft-basics.md)
+<!-- NAV_BOTTOM_END -->

@@ -1,5 +1,9 @@
 # 14-2 - 案例研究
 
+<!-- NAV_START -->
+> 导航： [上一篇：14-1 - 论文复现工作流](14-1-reproduce-workflow.md) | [返回目录](../../README.md#完整目录) | [下一篇：A - 配置参数参考](../../appendix/A-config-reference.md)
+<!-- NAV_END -->
+
 本章给出“如何把论文映射到 verl v0.8.0”的案例。重点不是复制某个固定脚本，而是学会找到官方入口、确认配置键、做最小复现。
 
 ## 案例 1：DeepSeekMath / GRPO
@@ -124,3 +128,9 @@ actor_rollout_ref.rollout.agent.default_agent_loop=tool_agent
 | 监控 | 是否记录 score、length、KL、clipfrac、entropy？ |
 
 复现不要一开始追求同等规模；先做 1 step 数值链路，再做小模型趋势，最后扩大模型和数据。
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：14-1 - 论文复现工作流](14-1-reproduce-workflow.md) | [返回目录](../../README.md#完整目录) | [下一篇：A - 配置参数参考](../../appendix/A-config-reference.md)
+<!-- NAV_BOTTOM_END -->

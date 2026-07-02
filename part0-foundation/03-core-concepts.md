@@ -1,4 +1,8 @@
-﻿# 03 - 核心概念
+# 03 - 核心概念
+
+<!-- NAV_START -->
+> 导航： [上一篇：02 - 快速上手](02-quick-start.md) | [返回目录](../README.md#完整目录) | [下一篇：04 - 配置系统](04-configuration.md)
+<!-- NAV_END -->
 
 理解 verl 的核心抽象是使用和扩展框架的基础。
 
@@ -282,3 +286,9 @@ actor_rollout_ref.model.path=/path/to/megatron/checkpoint
 - 查看 `examples/` 目录中的实际示例
 - 阅读 Part1 学习如何使用内置功能
 - 阅读 Part2 学习如何扩展框架
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：02 - 快速上手](02-quick-start.md) | [返回目录](../README.md#完整目录) | [下一篇：04 - 配置系统](04-configuration.md)
+<!-- NAV_BOTTOM_END -->

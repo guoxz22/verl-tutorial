@@ -1,10 +1,14 @@
 # 00 - 什么是 verl
 
+<!-- NAV_START -->
+> 导航： [返回目录](../README.md#完整目录) | [下一篇：01 - 安装与配置](01-installation.md)
+<!-- NAV_END -->
+
 ## 概述
 
 verl 是一个面向大模型后训练的强化学习框架，也是 HybridFlow 论文思想的开源实现。它把 RLHF / RLAIF / 可验证奖励 / Agentic RL 中常见的模块抽象成统一训练流：数据、rollout、reward、advantage、actor update、checkpoint 和监控。
 
-本教程基于 `verl-project/verl` v0.8.0。学习时请记住：verl 更新很快，命令能否运行主要取决于你使用的 tag 和配置键是否匹配。
+本教程基于 `verl-project/verl` v0.8.0。学习时需要注意：verl 更新很快，命令能否运行主要取决于当前 tag 与配置键是否匹配。
 
 ## 一句话理解
 
@@ -84,3 +88,9 @@ verl = Ray 分布式编排 + Hydra 配置 + PyTorch 训练后端 + 高吞吐 rol
 - [01-installation.md](01-installation.md) - 安装环境
 - [02-quick-start.md](02-quick-start.md) - 跑通 quickstart
 - [03-core-concepts.md](03-core-concepts.md) - 深入组件概念
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [返回目录](../README.md#完整目录) | [下一篇：01 - 安装与配置](01-installation.md)
+<!-- NAV_BOTTOM_END -->

@@ -1,5 +1,9 @@
 # 05-4 - RLOO / ReMax 详解
 
+<!-- NAV_START -->
+> 导航： [上一篇：05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md) | [返回目录](../../README.md#完整目录) | [下一篇：05-5 - 其他算法](05-5-other-algos.md)
+<!-- NAV_END -->
+
 本章详细介绍 RLOO 和 ReMax 算法的使用。
 
 ## RLOO (Reinforce Leave-One-Out)
@@ -188,3 +192,9 @@ python -m verl.trainer.main_ppo \
 ## 下一步
 
 - [05-5-other-algos.md](05-5-other-algos.md) - 其他算法（CISPO, DPPO, FAPO 等）
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md) | [返回目录](../../README.md#完整目录) | [下一篇：05-5 - 其他算法](05-5-other-algos.md)
+<!-- NAV_BOTTOM_END -->

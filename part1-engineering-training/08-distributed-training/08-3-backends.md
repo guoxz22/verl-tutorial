@@ -1,5 +1,9 @@
 # 08-3 - 训练后端选择
 
+<!-- NAV_START -->
+> 导航： [上一篇：08-2 - 多机训练](08-2-multi-node.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-4 - 推理引擎配置](08-4-inference-engine.md)
+<!-- NAV_END -->
+
 verl v0.8.0 把训练后端收敛到统一 worker / model engine 体系。学习时不要一开始就追最大规模，先按“能跑 -> 能扩 -> 能调”的顺序选后端。
 
 ## 后端对比
@@ -48,7 +52,7 @@ python -m verl.trainer.main_ppo \
   actor_rollout_ref.actor.megatron.use_mbridge=True
 ```
 
-大模型不要只改 actor，还要同步 ref/critic 的并行配置：
+大模型场景不应只改 actor，还要同步 ref/critic 的并行配置：
 
 ```bash
 actor_rollout_ref.ref.megatron.tensor_model_parallel_size=2 \
@@ -61,11 +65,11 @@ critic.megatron.tensor_model_parallel_size=2
 
 1. 先从 `examples/grpo_trainer/*veomni*.sh`、`examples/sft/*automodel*.sh` 复制可运行脚本。
 2. 不要手写完整配置树；用官方脚本中的 env vars 调模型、节点、并行度。
-3. 只在你确认模型族、硬件和依赖支持时使用。
+3. 只在模型族、硬件和依赖支持都确认后使用。
 
 ## 选择建议
 
-| 你现在的目标 | 推荐 |
+| 当前目标 | 推荐 |
 | --- | --- |
 | 学习 verl / 跑 0.5B-8B | FSDP2 + vLLM |
 | 做算法实验 | FSDP2，少改后端 |
@@ -80,3 +84,9 @@ critic.megatron.tensor_model_parallel_size=2
 - actor、ref、critic 的策略/并行配置要匹配任务需要。
 - 优先使用 `_per_gpu` 后缀的 micro batch 配置。
 - 每次换后端，先跑 1-2 step smoke test。
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：08-2 - 多机训练](08-2-multi-node.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-4 - 推理引擎配置](08-4-inference-engine.md)
+<!-- NAV_BOTTOM_END -->

@@ -1,5 +1,9 @@
 # 12-4 - 完整算法实现示例
 
+<!-- NAV_START -->
+> 导航： [上一篇：12-3 - 自定义 Reward Manager](12-3-reward-manager.md) | [返回目录](../../README.md#完整目录) | [下一篇：13-1 - 修改 Actor Worker](../13-modify-workers/13-1-actor-worker.md)
+<!-- NAV_END -->
+
 本章示例实现一个极简 Contrastive RL 变体，用来串联三个扩展点：advantage、policy loss、reward manager。它不是新论文算法，只是展示 v0.8.0 的正确接线方式。
 
 ## 目录结构
@@ -118,3 +122,9 @@ PYTHONPATH=$PWD:$PYTHONPATH python -m verl.trainer.main_ppo \
 2. 保持 tensor shape 与 mask 完全一致。
 3. 给每个自定义分支加 metrics。
 4. 先固定一个 batch 做数值检查，再跑分布式。
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：12-3 - 自定义 Reward Manager](12-3-reward-manager.md) | [返回目录](../../README.md#完整目录) | [下一篇：13-1 - 修改 Actor Worker](../13-modify-workers/13-1-actor-worker.md)
+<!-- NAV_BOTTOM_END -->

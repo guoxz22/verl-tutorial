@@ -1,5 +1,9 @@
 # 06-1 - SFT 基础训练
 
+<!-- NAV_START -->
+> 导航： [上一篇：05-5 - 其他算法](../05-algorithms/05-5-other-algos.md) | [返回目录](../../README.md#完整目录) | [下一篇：06-2 - 模型规模与调参](06-2-model-tuning.md)
+<!-- NAV_END -->
+
 SFT 在 v0.8.0 中使用统一入口：
 
 ```bash
@@ -66,7 +70,7 @@ SFT 数据通常是 parquet，每行包含 `messages`：
 }
 ```
 
-如果你的列名不是 `messages`，就改：
+若列名不是 `messages`，就改：
 
 ```bash
 data.messages_key=my_messages
@@ -91,3 +95,9 @@ critic.model.path=/path/to/sft/checkpoint/huggingface
 | loss mask 全 0 | messages 格式或 chat template 不匹配 | 检查 tokenizer chat template 和数据列 |
 | OOM | 单卡 micro batch 或最大长度太大 | 降低 `data.micro_batch_size_per_gpu` / `data.max_length` |
 | 多轮样本被截断 | 上下文超过 `data.max_length` | 增大 max_length 或清洗超长样本 |
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：05-5 - 其他算法](../05-algorithms/05-5-other-algos.md) | [返回目录](../../README.md#完整目录) | [下一篇：06-2 - 模型规模与调参](06-2-model-tuning.md)
+<!-- NAV_BOTTOM_END -->
