@@ -115,7 +115,25 @@ actor_rollout_ref.actor.kl_loss_coef=0.001 \
 actor_rollout_ref.ref.fsdp_config.param_offload=True  # 节省内存
 ```
 
-### 5. Reward Manager（奖励管理器）
+### 5. Teacher Model（OPD 教师模型）
+
+**作用**：在 OPD 中提供冻结教师策略的 token 级监督。
+
+**职责**：
+- 接收学生 rollout 形成的 prompt + response 前缀
+- 返回教师 logprob 或 top-k token 分布
+- 在多教师 OPD 中按 `distillation.teacher_key` 路由不同样本
+
+**配置示例**：
+
+```bash
+distillation.enabled=True \
+distillation.teacher_models.teacher_model.model_path=Qwen/Qwen3-32B \
+distillation.teacher_models.teacher_model.inference.name=vllm \
+distillation.distillation_loss.loss_mode=k1
+```
+
+### 6. Reward Manager（奖励管理器）
 
 **作用**：计算每个 response 的奖励。
 
@@ -126,7 +144,7 @@ actor_rollout_ref.ref.fsdp_config.param_offload=True  # 节省内存
 | 函数奖励 | 基于规则的奖励（如数学答案匹配） | 默认，需自定义 reward function |
 | 模型奖励 | 使用 Reward Model | `reward.reward_model.enable=True` |
 
-### 6. Advantage Estimator（优势估计器）
+### 7. Advantage Estimator（优势估计器）
 
 **作用**：计算 Advantage = Q(s,a) - V(s)，指导策略更新。
 

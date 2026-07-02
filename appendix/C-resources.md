@@ -46,6 +46,12 @@
 - [DeepSeek-R1](https://arxiv.org/abs/2501.12948) - GRPO 原论文
 - [DAPO](https://dapo-sia.github.io/) - DAPO 算法
 
+### OPD 相关
+
+- [verl OPD 文档](https://github.com/verl-project/verl/blob/v0.8.0/docs/algo/opd.md) - On-Policy Distillation 官方算法说明
+- [On-policy distillation of language models](https://arxiv.org/abs/2306.13649) - GKD / OPD 代表论文
+- [Rethinking OPD](https://github.com/thunlp/OPD) - OPD 机制与 recipe 参考
+
 ### 其他算法
 
 - [REINFORCE++](https://arxiv.org/abs/2401.08667)

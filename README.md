@@ -12,12 +12,15 @@ verl 是大模型后训练框架，核心目标是把策略模型、价值模型
 
 这一版仍然保持原有阅读方式：先用 Part0 建立整体认识，再按工程训练或研究扩展两条路线深入。每篇文章之间增加了轻量跳转，方便顺读，也方便查阅。
 
+内容层面，本版直接以 verl v0.8.0 release 的源码、官方示例、生成配置和文档为基准重新组织；v0.7.0 旧版只作为叙事风格、章节节奏和易学性参考，不作为新版事实来源。
+
 ## 本版更新重点
 
 | 方向 | v0.8.0 版写法 |
 | --- | --- |
 | 官方仓库 | `https://github.com/verl-project/verl` |
 | PPO/GRPO 入口 | `python -m verl.trainer.main_ppo` |
+| OPD 入口 | `examples/on_policy_distillation_trainer/` + `distillation.enabled=True` |
 | SFT 入口 | `torchrun ... -m verl.trainer.sft_trainer` |
 | Reward 配置 | 推荐 `reward.custom_reward_function.*`、`reward.reward_model.*`、`reward.reward_manager.*` |
 | Rollout 后端 | `hf`、`vllm`、`sglang`、`trtllm` |
@@ -26,6 +29,17 @@ verl 是大模型后训练框架，核心目标是把策略模型、价值模型
 | 自定义扩展 | `register_adv_est`、`register_policy_loss`、`verl.experimental.reward_loop.reward_manager.register` |
 
 > 说明：verl 的 `main` 分支更新很快。本教程以最新稳定 release v0.8.0 为基准；若使用 `main`，优先对照源码中的 `verl/trainer/config/_generated_ppo_trainer.yaml`。
+
+## v0.8.0 重点能力在教程中的位置
+
+| 能力 | 教程位置 | 读法 |
+| --- | --- | --- |
+| OPD / 多教师蒸馏 | [05-6 OPD 训练](part1-engineering-training/05-algorithms/05-6-opd.md) | 像读 PPO/GRPO 一样读：概念、脚本、配置、排错 |
+| Trainer 数据流与核心抽象 | [03 核心概念](part0-foundation/03-core-concepts.md)、[10-1 训练监控](part1-engineering-training/10-operations/10-1-monitoring.md) | 先理解 RayPPOTrainer/DataProto，再看日志 |
+| Megatron / VeOmni / TorchTitan 后端 | [08-3 训练后端选择](part1-engineering-training/08-distributed-training/08-3-backends.md) | 先选后端，再改 `model_engine` |
+| vLLM / SGLang / TRTLLM rollout | [08-4 推理引擎配置](part1-engineering-training/08-distributed-training/08-4-inference-engine.md) | 对照显存、吞吐和多轮需求 |
+| Agentic RL / 工具调用 | [07 Agent RL](part1-engineering-training/07-agent-rl/07-1-tool-calling.md) | 从 tool calling 到 multi-turn，再到 agent loop |
+| 扩展点迁移 | [11 扩展总览](part2-research-extension/11-extension-overview.md)、[12 自定义算法](part2-research-extension/12-custom-algorithm/12-1-advantage.md) | 先看扩展点地图，再改具体组件 |
 
 ## 适用读者
 
@@ -72,7 +86,7 @@ verl-tutorial/
 ### 工程人员路径
 
 1. [00-04 基础章节](#part0-foundation)：掌握 verl 的组件、配置树和最小命令。
-2. [05 算法章节](#section-05-algorithms)：根据任务选择 PPO、GRPO、RLOO、ReMax、GPG、GSPO 等。
+2. [05 算法章节](#section-05-algorithms)：根据任务选择 PPO、GRPO、RLOO、ReMax、GPG、GSPO、OPD 等。
 3. [08 分布式章节](#section-08-distributed)：确定 FSDP/FSDP2/Megatron/VeOmni 与 rollout 后端。
 4. [09 数据与奖励章节](#section-09-data-reward)：准备 parquet、奖励函数、Reward Model。
 5. [10 运维章节](#section-10-operations)：监控、checkpoint、profiling、集群调度。
@@ -120,6 +134,7 @@ verl-tutorial/
 | 05-3 | REINFORCE++ / RLOO / ReMax 训练 | [进入](part1-engineering-training/05-algorithms/05-3-reinforce-pp.md) |
 | 05-4 | RLOO / ReMax 详解 | [进入](part1-engineering-training/05-algorithms/05-4-rloo-remax.md) |
 | 05-5 | 其他算法 | [进入](part1-engineering-training/05-algorithms/05-5-other-algos.md) |
+| 05-6 | On-Policy Distillation 训练 | [进入](part1-engineering-training/05-algorithms/05-6-opd.md) |
 
 <a id="section-06-sft"></a>
 
