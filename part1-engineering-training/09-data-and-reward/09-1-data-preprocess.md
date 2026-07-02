@@ -1,5 +1,9 @@
 # 09-1 - 数据预处理
 
+<!-- NAV_START -->
+> 导航： [上一篇：08-4 - 推理引擎配置](../08-distributed-training/08-4-inference-engine.md) | [返回目录](../../README.md#完整目录) | [下一篇：09-2 - 自定义数据集](09-2-custom-dataset.md)
+<!-- NAV_END -->
+
 本章介绍如何准备 verl 训练所需的数据。
 
 ## 数据格式
@@ -161,3 +165,9 @@ data.seed=42
 
 - [09-2-custom-dataset.md](09-2-custom-dataset.md) - 自定义数据集
 - [09-3-reward-config.md](09-3-reward-config.md) - 奖励配置
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：08-4 - 推理引擎配置](../08-distributed-training/08-4-inference-engine.md) | [返回目录](../../README.md#完整目录) | [下一篇：09-2 - 自定义数据集](09-2-custom-dataset.md)
+<!-- NAV_BOTTOM_END -->

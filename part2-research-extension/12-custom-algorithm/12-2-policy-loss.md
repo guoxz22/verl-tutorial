@@ -1,5 +1,9 @@
 # 12-2 - 自定义 Policy Loss
 
+<!-- NAV_START -->
+> 导航： [上一篇：12-1 - 扩展 Advantage Estimator](12-1-advantage.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-3 - 自定义 Reward Manager](12-3-reward-manager.md)
+<!-- NAV_END -->
+
 Policy loss 决定 actor 如何根据 log probability、advantage 和 mask 更新。v0.8.0 的注册入口是 `register_policy_loss`，配置键是：
 
 ```bash
@@ -43,7 +47,7 @@ def compute_my_loss(
     return loss, metrics
 ```
 
-> 如果你需要在独立文件中注册 loss，确保训练进程会 import 这个文件。最常见做法是在自定义 package 的 `__init__.py` 中 import，或在启动脚本中通过你自己的入口先 import 再调用 verl trainer。
+> 若需要在独立文件中注册 loss，确保训练进程会 import 这个文件。最常见做法是在自定义 package 的 `__init__.py` 中 import，或在启动脚本中通过自定义入口先 import 再调用 verl trainer。
 
 ## 使用配置
 
@@ -85,7 +89,7 @@ actor_rollout_ref.actor.loss_type=my_loss
 actor_rollout_ref.actor.policy_loss.loss_mode=my_loss
 ```
 
-## 验证你的 loss 是否生效
+## 验证 loss 是否生效
 
 1. 在 metrics 里输出唯一前缀，例如 `actor/my_pg_loss`。
 2. 训练 1 step，检查 console 或 wandb 中是否出现该指标。
@@ -100,3 +104,9 @@ actor_rollout_ref.actor.policy_loss.loss_mode=my_loss
 | `Key policy_loss.my_x is not in struct` | 新增 Hydra 键没加 `+` | 用 `+actor_rollout_ref.actor.policy_loss.my_x=...` |
 | loss 是 NaN | ratio 爆炸或 mask 错 | clamp ratio，检查 `response_mask` |
 | 指标没有出现 | 返回 metrics key 不对或 loss 未调用 | 加唯一 metrics 前缀 |
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：12-1 - 扩展 Advantage Estimator](12-1-advantage.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-3 - 自定义 Reward Manager](12-3-reward-manager.md)
+<!-- NAV_BOTTOM_END -->

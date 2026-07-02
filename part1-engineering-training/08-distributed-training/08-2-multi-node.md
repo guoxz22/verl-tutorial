@@ -1,5 +1,9 @@
 # 08-2 - 多机训练
 
+<!-- NAV_START -->
+> 导航： [上一篇：08-1 - 单机多卡训练](08-1-single-node.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-3 - 训练后端选择](08-3-backends.md)
+<!-- NAV_END -->
+
 本章介绍多机分布式训练配置。
 
 ## Ray 集群配置
@@ -160,3 +164,9 @@ python -c "import torch; print(torch.distributed.is_nccl_available())"
 ## 下一步
 
 - [08-3-backends.md](08-3-backends.md) - 后端选择
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：08-1 - 单机多卡训练](08-1-single-node.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-3 - 训练后端选择](08-3-backends.md)
+<!-- NAV_BOTTOM_END -->

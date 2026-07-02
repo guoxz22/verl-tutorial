@@ -1,5 +1,9 @@
 # 05-3 - REINFORCE++ / RLOO / ReMax 训练
 
+<!-- NAV_START -->
+> 导航： [上一篇：05-2 - GRPO 训练](05-2-grpo.md) | [返回目录](../../README.md#完整目录) | [下一篇：05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md)
+<!-- NAV_END -->
+
 本章介绍 verl 支持的其他 Policy Gradient 算法。
 
 ## REINFORCE++
@@ -222,3 +226,9 @@ actor_rollout_ref.actor.kl_loss_coef=0.001
 
 - [05-4-rloo-remax.md](05-4-rloo-remax.md) - RLOO/ReMax 详解
 - [05-5-other-algos.md](05-5-other-algos.md) - 其他算法
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：05-2 - GRPO 训练](05-2-grpo.md) | [返回目录](../../README.md#完整目录) | [下一篇：05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md)
+<!-- NAV_BOTTOM_END -->

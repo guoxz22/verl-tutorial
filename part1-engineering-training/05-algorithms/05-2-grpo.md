@@ -1,5 +1,9 @@
 # 05-2 - GRPO 训练
 
+<!-- NAV_START -->
+> 导航： [上一篇：05-1 - PPO 训练](05-1-ppo.md) | [返回目录](../../README.md#完整目录) | [下一篇：05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md)
+<!-- NAV_END -->
+
 GRPO（Group Relative Policy Optimization）是 DeepSeek-R1 使用的算法，适合可验证奖励场景（如数学、代码）。
 
 ## 算法特点
@@ -287,3 +291,9 @@ actor_rollout_ref.rollout.val_kwargs.do_sample=False
 
 - [05-3-reinforce-pp.md](05-3-reinforce-pp.md) - REINFORCE++ 训练
 - [09-1-data-preprocess.md](../09-data-and-reward/09-1-data-preprocess.md) - 数据预处理
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：05-1 - PPO 训练](05-1-ppo.md) | [返回目录](../../README.md#完整目录) | [下一篇：05-3 - REINFORCE++ / RLOO / ReMax 训练](05-3-reinforce-pp.md)
+<!-- NAV_BOTTOM_END -->

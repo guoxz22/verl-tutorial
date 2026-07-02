@@ -1,5 +1,9 @@
 # 13-3 - 修改 Rollout Worker
 
+<!-- NAV_START -->
+> 导航： [上一篇：13-2 - 修改 Critic Worker](13-2-critic-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：14-1 - 论文复现工作流](../14-paper-reproduction/14-1-reproduce-workflow.md)
+<!-- NAV_END -->
+
 Rollout 负责生成 response。v0.8.0 的 rollout 代码已经按后端拆分，不再是旧路径 `verl/workers/rollout/vllm/`。
 
 ## 核心文件
@@ -25,7 +29,7 @@ actor_rollout_ref.rollout.max_num_batched_tokens=8192 \
 +actor_rollout_ref.rollout.engine_kwargs.vllm.some_arg=value
 ```
 
-只有在你要改变“请求如何构造、权重如何同步、server 如何适配、token 如何回传”时，才考虑改 rollout 代码。
+只有需要改变“请求如何构造、权重如何同步、server 如何适配、token 如何回传”时，才考虑改 rollout 代码。
 
 ## 自定义 rollout 的推荐方式
 
@@ -51,7 +55,7 @@ class MyRollout(BaseRollout):
 
 ## AgentRL 优先改 AgentLoop
 
-如果你的需求是“多轮交互、工具调用、搜索、沙箱”，优先改：
+若需求是“多轮交互、工具调用、搜索、沙箱”，优先改：
 
 ```text
 verl/experimental/agent_loop/
@@ -92,3 +96,9 @@ verl/workers/config/rollout.py
 
 - [14-1-reproduce-workflow.md](../14-paper-reproduction/14-1-reproduce-workflow.md)
 - [07-3-agent-loop.md](../../part1-engineering-training/07-agent-rl/07-3-agent-loop.md)
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：13-2 - 修改 Critic Worker](13-2-critic-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：14-1 - 论文复现工作流](../14-paper-reproduction/14-1-reproduce-workflow.md)
+<!-- NAV_BOTTOM_END -->

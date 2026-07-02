@@ -1,5 +1,9 @@
 # A - 配置参数参考
 
+<!-- NAV_START -->
+> 导航： [上一篇：14-2 - 案例研究](../part2-research-extension/14-paper-reproduction/14-2-case-studies.md) | [返回目录](../README.md#完整目录) | [下一篇：B - 常见错误与解决](B-common-errors.md)
+<!-- NAV_END -->
+
 本附录按 v0.8.0 的 `verl/trainer/config/_generated_ppo_trainer.yaml`、`rollout/rollout.yaml`、`reward/reward.yaml` 和 `sft_trainer_engine.yaml` 整理。它不是完整复制配置文件，而是列出最常改、最容易写错的键。
 
 ## 版本基准
@@ -160,3 +164,9 @@
 | `data.micro_batch_size` in SFT | `data.micro_batch_size_per_gpu` |
 | `actor_rollout_ref.rollout.multi_turn.tool.dict.*` | `tool_config_path` 或 `function_tool_path` |
 | `data.tool_provider` | `agent.default_agent_loop` 或数据字段 `agent_name` |
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：14-2 - 案例研究](../part2-research-extension/14-paper-reproduction/14-2-case-studies.md) | [返回目录](../README.md#完整目录) | [下一篇：B - 常见错误与解决](B-common-errors.md)
+<!-- NAV_BOTTOM_END -->

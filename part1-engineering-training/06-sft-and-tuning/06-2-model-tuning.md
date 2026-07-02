@@ -1,4 +1,8 @@
-﻿# 06-2 - 模型规模与调参
+# 06-2 - 模型规模与调参
+
+<!-- NAV_START -->
+> 导航： [上一篇：06-1 - SFT 基础训练](06-1-sft-basics.md) | [返回目录](../../README.md#完整目录) | [下一篇：07-1 - Tool Calling 训练](../07-agent-rl/07-1-tool-calling.md)
+<!-- NAV_END -->
 
 不同规模的模型需要不同的配置策略。
 
@@ -212,3 +216,9 @@ python -m verl.trainer.main_ppo \
 ## 下一步
 
 - [08-distributed-training](../08-distributed-training/) - 分布式训练配置
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：06-1 - SFT 基础训练](06-1-sft-basics.md) | [返回目录](../../README.md#完整目录) | [下一篇：07-1 - Tool Calling 训练](../07-agent-rl/07-1-tool-calling.md)
+<!-- NAV_BOTTOM_END -->

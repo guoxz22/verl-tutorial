@@ -1,5 +1,9 @@
 # B - 常见错误与解决
 
+<!-- NAV_START -->
+> 导航： [上一篇：A - 配置参数参考](A-config-reference.md) | [返回目录](../README.md#完整目录) | [下一篇：C - 进阶学习资源](C-resources.md)
+<!-- NAV_END -->
+
 本章列出 verl 使用中的常见错误及解决方案。
 
 ## 安装问题
@@ -267,3 +271,9 @@ print(df.head())
 print(df.columns)
 print(len(df))
 ```
+
+---
+
+<!-- NAV_BOTTOM_START -->
+> 导航： [上一篇：A - 配置参数参考](A-config-reference.md) | [返回目录](../README.md#完整目录) | [下一篇：C - 进阶学习资源](C-resources.md)
+<!-- NAV_BOTTOM_END -->
