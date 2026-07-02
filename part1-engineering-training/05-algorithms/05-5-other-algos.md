@@ -1,195 +1,95 @@
 # 05-5 - 其他算法
 
-verl 还支持多种其他 RL 算法变体，本章简要介绍。
+本章不是把所有算法讲成论文综述，而是帮你在 v0.8.0 的官方示例目录中找到正确入口，并知道每个算法到底改的是 `adv_estimator` 还是 `policy_loss.loss_mode`。
 
-## 算法列表
+## v0.8.0 算法目录
 
-| 算法 | 目录 | 特点 |
-|------|------|------|
-| CISPO | `examples/cispo_trainer/` | Clipped IS-weight PPO |
-| DPPO | `examples/dppo_trainer/` | Diffusion PPO |
-| FAPO | `examples/fapo_trainer/` | Flow-based PPO |
-| GMPO | `examples/gmpo_trainer/` | Grouped Multi-head PPO |
-| GPG | `examples/gpg_trainer/` | Generalized Policy Gradient |
-| GSPO | `examples/gspo_trainer/` | Grouped Shaped PPO |
-| SAPO | `examples/sapo_trainer/` | Self-Adaptive PPO |
-| OTB | `examples/otb_trainer/` | Off-policy Training with Buffer |
-| MTP | `examples/mtp_trainer/` | Multi-Turn PPO |
+| 目录 | 算法 | 主要开关 |
+| --- | --- | --- |
+| `examples/ppo_trainer/` | PPO | `algorithm.adv_estimator=gae` |
+| `examples/grpo_trainer/` | GRPO | `algorithm.adv_estimator=grpo` |
+| `examples/rloo_trainer/` | RLOO | `algorithm.adv_estimator=rloo` |
+| `examples/remax_trainer/` | ReMax | `algorithm.adv_estimator=remax` |
+| `examples/reinforce_plus_plus_trainer/` | REINFORCE++ | `algorithm.adv_estimator=reinforce_plus_plus` |
+| `examples/cispo_trainer/` | CISPO | `actor_rollout_ref.actor.policy_loss.loss_mode=cispo` |
+| `examples/dppo_trainer/` | Divergence PPO | `policy_loss.loss_mode=dppo_tv` 或 `dppo_kl` |
+| `examples/gdpo_trainer/` | GDPO | `algorithm.adv_estimator=gdpo` |
+| `examples/gmpo_trainer/` | GMPO | `policy_loss.loss_mode=geo_mean` |
+| `examples/gpg_trainer/` | Group Policy Gradient | `adv_estimator=gpg` + `loss_mode=gpg` |
+| `examples/gspo_trainer/` | GSPO | `policy_loss.loss_mode=gspo` |
+| `examples/sapo_trainer/` | SAPO | `policy_loss.loss_mode=sapo` |
+| `examples/otb_trainer/` | Optimal Token Baseline | `adv_estimator=optimal_token_baseline` |
+| `examples/mtp_trainer/` | Multi-Token-Prediction RL | `actor_rollout_ref.model.mtp.*` |
+| `examples/on_policy_distillation_trainer/` | On-Policy Distillation | `distillation.enabled=True` |
 
-## CISPO (Clipped IS-weight PPO)
+> 不要把 `adv_estimator` 和 `policy_loss.loss_mode` 混在一起。前者决定 advantage 如何算，后者决定 policy loss 如何聚合/裁剪。
 
-CISPO 使用 Importance Sampling 权重裁剪来稳定训练。
+## Advantage Estimator 列表
 
-```bash
-# 查看 CISPO 示例
-cat examples/cispo_trainer/run_qwen2-7b.sh
+v0.8.0 注册的主要 estimator：
+
+```text
+gae, grpo, reinforce_plus_plus, reinforce_plus_plus_baseline,
+rloo, remax, opo, grpo_passk, gpg, rloo_vectorized,
+grpo_vectorized, gdpo, optimal_token_baseline,
+tir_optimal_token_baseline
 ```
 
-**特点**：
-- 裁剪 IS 权重而非 ratio
-- 更稳定的梯度估计
-- 适合分布偏移较大的场景
-
-## DPPO (Diffusion PPO)
-
-DPPO 用于扩散模型的 RL 训练。
-
-```bash
-# 查看 DPPO 示例
-cat examples/dppo_trainer/run_example.sh
-```
-
-**特点**：
-- 适配扩散模型
-- 支持 Classifier-free Guidance
-- 图像生成任务
-
-## FAPO (Flow-based PPO)
-
-FAPO 用于 Flow-based 模型的 RL 训练。
-
-```bash
-# 查看 FAPO 示例
-ls examples/fapo_trainer/
-```
-
-**特点**：
-- 支持 Normalizing Flow
-- 生成任务优化
-
-## GMPO (Grouped Multi-head PPO)
-
-GMPO 使用多头策略网络。
-
-```bash
-# 查看 GMPO 示例
-ls examples/gmpo_trainer/
-```
-
-**特点**：
-- 多头策略
-- 多样性探索
-
-## GPG (Generalized Policy Gradient)
-
-GPG 是通用的 Policy Gradient 实现。
-
-```bash
-# 查看 GPG 示例
-ls examples/gpg_trainer/
-```
-
-**特点**：
-- 通用框架
-- 易于扩展
-
-## GSPO (Grouped Shaped PPO)
-
-GSPO 使用 Group-based 奖励塑形。
-
-```bash
-# 查看 GSPO 示例
-ls examples/gspo_trainer/
-```
-
-**特点**：
-- 奖励塑形
-- Group-based 优化
-
-## SAPO (Self-Adaptive PPO)
-
-SAPO 自适应调整超参数。
-
-```bash
-# 查看 SAPO 示例
-ls examples/sapo_trainer/
-```
-
-**特点**：
-- 自适应 KL 惩罚
-- 自适应学习率
-
-## OTB (Off-policy Training with Buffer)
-
-OTB 支持离策略训练。
-
-```bash
-# 查看 OTB 示例
-ls examples/otb_trainer/
-```
-
-**特点**：
-- 经验回放
-- 数据重用
-- 样本效率高
-
-## MTP (Multi-Turn PPO)
-
-MTP 专门用于多轮对话训练。
-
-```bash
-# 查看 MTP 示例
-ls examples/mtp_trainer/
-```
-
-**特点**：
-- 多轮对话支持
-- 状态追踪
-- 对话历史管理
-
-## 使用通用训练器
-
-大多数算法可以通过 `main_ppo.py` 配置：
+典型用法：
 
 ```bash
 python -m verl.trainer.main_ppo \
-    algorithm.adv_estimator=<algorithm_name> \
-    ...
+  algorithm.adv_estimator=gdpo \
+  reward.reward_manager.name=gdpo
 ```
 
-## 查看具体示例
+## Policy Loss 列表
+
+v0.8.0 注册的 policy loss：
+
+```text
+vanilla, dppo_tv, dppo_kl, gspo, sapo, gpg,
+clip_cov, kl_cov, geo_mean, cispo, bypass_mode
+```
+
+典型用法：
 
 ```bash
-# 列出所有示例
-ls examples/
-
-# 查看特定算法的 README
-cat examples/grpo_trainer/README.md
-cat examples/ppo_trainer/README.md
-
-# 查看运行脚本
-cat examples/grpo_trainer/run_qwen2-7b.sh
+python -m verl.trainer.main_ppo \
+  algorithm.adv_estimator=grpo \
+  actor_rollout_ref.actor.policy_loss.loss_mode=gspo \
+  actor_rollout_ref.actor.loss_agg_mode=seq-mean-token-mean
 ```
 
-## 算法选择指南
+## 选型建议
 
-```
-                ┌─────────────────────┐
-                │ 有 Reward Model?    │
-                └──────────┬──────────┘
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-             Yes                        No
-              │                         │
-              ▼                         ▼
-        ┌─────────┐              ┌─────────────┐
-        │  PPO    │              │ 可验证奖励? │
-        └─────────┘              └──────┬──────┘
-                                        │
-                           ┌────────────┴────────────┐
-                           │                         │
-                          Yes                        No
-                           │                         │
-                           ▼                         ▼
-                     ┌───────────┐            ┌───────────┐
-                     │ GRPO/     │            │ REINFORCE │
-                     │ RLOO/     │            │ 或使用 RM │
-                     │ ReMax     │            └───────────┘
-                     └───────────┘
+| 任务 | 首选 | 理由 |
+| --- | --- | --- |
+| 数学/代码可验证奖励，想快速起步 | GRPO | 不需要 critic，工程成本低 |
+| 有 Reward Model，想走经典 RLHF | PPO | actor + critic 更完整 |
+| 想减少 critic 成本但保留多样采样 | RLOO / ReMax | critic-free，样本效率和稳定性折中 |
+| 大 MoE / 序列级稳定性 | GSPO / GMPO | 更关注序列级或几何平均聚合 |
+| 复现特定论文 | 对应 examples 或 recipe | 先跑官方脚本，再改数据和模型 |
+| 多 token prediction / speculative head | MTP | 只在支持 MTP 架构和后端时使用 |
+
+## 正确查看示例
+
+```bash
+# 总索引
+cat examples/README.md
+
+# 算法示例
+ls examples/grpo_trainer
+ls examples/gspo_trainer
+ls examples/mtp_trainer
+
+# 研究型配方
+ls recipe
 ```
 
-## 下一步
+## 学习顺序
 
-- [06-sft-and-tuning](../06-sft-and-tuning/) - SFT 与微调
-- [07-agent-rl](../07-agent-rl/) - AgentRL 训练
+1. 先把 GRPO 跑通，理解 `rollout.n`、`train_batch_size`、reward。
+2. 再看 PPO，理解 critic 与 value loss。
+3. 然后区分两类扩展：只改 advantage 的算法，以及只改 policy loss 的算法。
+4. 最后再研究 MTP、on-policy distillation、fully async 等高级能力。

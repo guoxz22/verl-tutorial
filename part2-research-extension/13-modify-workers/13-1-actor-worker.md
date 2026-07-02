@@ -1,111 +1,84 @@
 # 13-1 - 修改 Actor Worker
 
-本章介绍如何修改 Actor Worker 以实现自定义训练逻辑。
+v0.8.0 的 Actor/Ref/Rollout 逻辑主要集中在 `verl/workers/engine_workers.py`，底层模型实现放在 `verl/workers/engine/<backend>/`。旧版教程里提到的 `fsdp_workers.py`、`megatron_workers.py` 不再是本版主要入口。
 
-## Actor Worker 基础
+## 先问：真的需要改 Worker 吗？
 
-Actor Worker 负责：
-- 加载和管理 Actor 模型
-- 执行前向/后向传播
-- 计算 Policy Loss
-- 更新模型参数
+| 需求 | 推荐做法 |
+| --- | --- |
+| 改 PPO/GSPO/SAPO loss | 自定义 `register_policy_loss` |
+| 改 advantage | 自定义 `register_adv_est` |
+| 改 KL、clip、batch、offload | 改配置 |
+| 加 actor metrics | 优先在 policy loss 或 trainer metrics 中加 |
+| 改 forward/backward/权重同步 | 才考虑 Worker/Engine |
 
-## 核心文件
+Worker 是高风险层，改了以后要同时考虑 Ray、分布式、checkpoint、rollout 权重同步。
 
-| 后端 | 文件位置 |
-|------|----------|
-| FSDP | `verl/workers/fsdp_workers.py` |
-| Megatron | `verl/workers/megatron_workers.py` |
-| 新引擎 | `verl/workers/engine_workers.py` |
+## v0.8.0 相关文件
 
-## 主要方法
+| 文件 | 作用 |
+| --- | --- |
+| `verl/workers/engine_workers.py` | `ActorRolloutRefWorker` 与统一 TrainingWorker 路径 |
+| `verl/workers/engine/base.py` | engine 抽象 |
+| `verl/workers/engine/fsdp/` | FSDP/FSDP2 实现 |
+| `verl/workers/engine/megatron/` | Megatron 实现 |
+| `verl/workers/engine/veomni/` | VeOmni 实现 |
+| `verl/workers/config/actor.py` | actor 配置 dataclass |
+| `verl/workers/utils/losses.py` | actor/critic loss 工具 |
 
-```python
-class ActorRolloutRefWorker(Worker):
-    def __init__(self, config, role):
-        """初始化"""
-        pass
+## Actor Worker 关键方法
 
-    def load_model(self):
-        """加载模型"""
-        pass
+`engine_workers.py` 中应重点看：
 
-    def forward(self, data):
-        """前向传播"""
-        pass
-
-    def compute_log_prob(self, data):
-        """计算 log probability"""
-        pass
-
-    def update_policy(self, data):
-        """更新策略"""
-        pass
+```text
+ActorRolloutRefWorker.compute_log_prob
+ActorRolloutRefWorker.update_actor
+ActorRolloutRefWorker.generate_sequences
 ```
 
-## 修改示例：添加自定义正则化
+这些方法分别对应：算旧策略/参考 logprob、更新 actor、调用 rollout 生成。
+
+## 更推荐的扩展方式：自定义 policy loss
+
+大部分“改 actor update”的论文不需要改 Worker：
 
 ```python
-# custom_actor_worker.py
-from verl.workers.fsdp_workers import ActorRolloutRefWorker
+from verl.trainer.ppo.core_algos import register_policy_loss
 
-class CustomActorWorker(ActorRolloutRefWorker):
-    """带自定义正则化的 Actor Worker"""
-
-    def update_policy(self, data):
-        """重写 policy 更新，添加自定义正则化"""
-        # 调用原始逻辑
-        metrics = super().update_policy(data)
-
-        # 添加自定义正则化
-        if hasattr(self.config, 'custom_l2_reg'):
-            l2_reg = 0.0
-            for param in self.actor_model.parameters():
-                l2_reg += torch.norm(param, p=2)
-
-            l2_loss = self.config.custom_l2_reg * l2_reg
-            l2_loss.backward()
-
-            metrics['custom/l2_reg'] = l2_reg.item()
-
-        return metrics
+@register_policy_loss("my_actor_loss")
+def my_actor_loss(old_log_prob, log_prob, advantages, response_mask, loss_agg_mode, config=None, rollout_log_probs=None):
+    ...
 ```
 
-## 修改示例：自定义梯度处理
+配置：
 
-```python
-class CustomActorWorker(ActorRolloutRefWorker):
-    """带自定义梯度处理的 Actor Worker"""
-
-    def update_policy(self, data):
-        metrics = super().update_policy(data)
-
-        # 梯度裁剪后处理
-        if hasattr(self.config, 'custom_grad_norm_target'):
-            total_norm = torch.nn.utils.clip_grad_norm_(
-                self.actor_model.parameters(),
-                self.config.grad_clip
-            )
-
-            # 自定义梯度缩放
-            if total_norm > self.config.custom_grad_norm_target:
-                scale = self.config.custom_grad_norm_target / (total_norm + 1e-8)
-                for param in self.actor_model.parameters():
-                    if param.grad is not None:
-                        param.grad.data.mul_(scale)
-
-            metrics['custom/grad_norm'] = total_norm.item()
-
-        return metrics
+```bash
+actor_rollout_ref.actor.policy_loss.loss_mode=my_actor_loss
 ```
 
-## 注册自定义 Worker
+这样不会破坏 worker 的分布式生命周期。
 
-```python
-# 在配置中使用
-# trainer.custom_actor_worker=/path/to/custom_actor_worker.py:CustomActorWorker
+## 必须改 Worker 时的流程
+
+1. 在 v0.8.0 源码中新建分支，不直接在教程里复制旧类名。
+2. 找到当前 `ActorRolloutRefWorker.update_actor` 的调用链。
+3. 先加 metrics，不改行为，确认自定义代码被调用。
+4. 再做最小行为修改。
+5. 用 `trainer.total_training_steps=1` 做 smoke test。
+6. 再跑 8 卡/多机。
+
+## 不推荐的旧接线
+
+不要假设存在：
+
+```text
+verl/workers/fsdp_workers.py
+trainer.custom_actor_worker=/path/to/worker.py:ClassName
 ```
+
+v0.8.0 没有把 `trainer.custom_actor_worker` 作为官方稳定配置入口。需要替换 worker 时，应先阅读 `main_ppo.py` 中 role 到 worker 的映射，再决定是否维护自己的入口脚本。
 
 ## 下一步
 
-- [13-2-critic-worker.md](13-2-critic-worker.md) - 修改 Critic Worker
+- [12-2-policy-loss.md](../12-custom-algorithm/12-2-policy-loss.md)
+- [13-2-critic-worker.md](13-2-critic-worker.md)

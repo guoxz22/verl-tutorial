@@ -1,167 +1,99 @@
 # 08-4 - 推理引擎配置
 
-verl 支持多种推理引擎用于 Rollout 生成。
+Rollout 后端负责生成训练样本，是 verl 性能和稳定性的关键。v0.8.0 的配置入口是：
 
-## 引擎对比
+```bash
+actor_rollout_ref.rollout.name=<hf|vllm|sglang|trtllm>
+```
 
-| 引擎 | 特点 | 适用场景 |
-|------|------|----------|
-| vLLM | 高吞吐，稳定 | 标准训练任务 |
-| SGLang | 多轮、Agent、灵活 | AgentRL、多轮对话 |
-| HF | 简单，调试方便 | 小规模实验 |
-| TRTLLM | NVIDIA 优化 | 生产部署 |
+## 后端对比
+
+| 后端 | 适合场景 | 备注 |
+| --- | --- | --- |
+| `hf` | 调试、最小依赖、小模型 | 慢，但排查问题直接 |
+| `vllm` | 通用高吞吐 rollout | 入门首选，FSDP 常用 |
+| `sglang` | 多轮、工具、复杂 serving 能力 | AgentRL 常用 |
+| `trtllm` | NVIDIA TensorRT-LLM 高性能 rollout | 依赖和镜像要求更高 |
 
 ## vLLM
 
-### 基本配置
-
 ```bash
-actor_rollout_ref.rollout.name=vllm
-```
-
-### 关键参数
-
-```bash
-# Tensor Parallel
-actor_rollout_ref.rollout.tensor_model_parallel_size=2
-
-# GPU 内存
-actor_rollout_ref.rollout.gpu_memory_utilization=0.6
-
-# 采样参数
-actor_rollout_ref.rollout.temperature=1.0
-actor_rollout_ref.rollout.top_p=1.0
-actor_rollout_ref.rollout.top_k=-1
-
-# 批处理
+actor_rollout_ref.rollout.name=vllm \
+actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
+actor_rollout_ref.rollout.gpu_memory_utilization=0.5 \
+actor_rollout_ref.rollout.n=8 \
 actor_rollout_ref.rollout.max_num_batched_tokens=8192
-actor_rollout_ref.rollout.max_num_seqs=1024
-
-# 数据类型
-actor_rollout_ref.rollout.dtype=bfloat16
 ```
 
-### vLLM V1（推荐）
+传递 vLLM 专属参数时使用 `engine_kwargs`，新键要加 `+`：
 
 ```bash
-export VLLM_USE_V1=1
-```
-
-### 完整示例
-
-```bash
-python -m verl.trainer.main_ppo \
-    actor_rollout_ref.rollout.name=vllm \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.6 \
-    actor_rollout_ref.rollout.n=5 \
-    actor_rollout_ref.rollout.temperature=1.0 \
-    actor_rollout_ref.rollout.max_num_batched_tokens=8192 \
-    actor_rollout_ref.rollout.dtype=bfloat16 \
-    actor_rollout_ref.rollout.enforce_eager=True \
-    actor_rollout_ref.rollout.free_cache_engine=True \
-    ...
++actor_rollout_ref.rollout.engine_kwargs.vllm.compilation_config.cudagraph_capture_sizes='[1,8,16,32,64,128]'
 ```
 
 ## SGLang
 
-### 基本配置
-
 ```bash
-actor_rollout_ref.rollout.name=sglang
+actor_rollout_ref.rollout.name=sglang \
+actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
+actor_rollout_ref.rollout.gpu_memory_utilization=0.6
 ```
 
-### 多轮配置
+AgentRL / Tool Calling 常配：
 
 ```bash
-# 启用多轮
-actor_rollout_ref.rollout.multi_turn.enable=true
-actor_rollout_ref.rollout.multi_turn.max_assistant_turns=5
+actor_rollout_ref.rollout.multi_turn.enable=True \
+actor_rollout_ref.rollout.multi_turn.tool_config_path=/path/to/tool_config.yaml \
+actor_rollout_ref.rollout.agent.default_agent_loop=tool_agent
 ```
 
-### Server 模式
+SGLang 也有 Prefill-Decode disaggregation 相关配置：
 
 ```bash
-# 使用 Server 模式（推荐用于多轮）
-actor_rollout_ref.rollout.multi_turn.server_mode=true
+actor_rollout_ref.rollout.disaggregation.enabled=True
 ```
 
-### 完整示例
-
-```bash
-python -m verl.trainer.main_ppo \
-    actor_rollout_ref.rollout.name=sglang \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.5 \
-    actor_rollout_ref.rollout.n=4 \
-    actor_rollout_ref.rollout.multi_turn.enable=true \
-    actor_rollout_ref.rollout.multi_turn.max_assistant_turns=10 \
-    ...
-```
-
-## HuggingFace
-
-### 基本配置
-
-```bash
-actor_rollout_ref.rollout.name=hf
-```
-
-### 适用场景
-
-- 小规模实验
-- 调试
-- 兼容性测试
+仅在你理解集群放置和 SGLang 版本要求时使用。
 
 ## TRTLLM
 
-### 基本配置
+v0.8.0 代码和 worker 文档支持 TensorRT-LLM rollout：
 
 ```bash
 actor_rollout_ref.rollout.name=trtllm
 ```
 
-### 预备工作
-
-需要先构建 TRTLLM 引擎：
+通常还需要安装 `.[trtllm]` 或使用官方 TensorRT-LLM Docker，并通过 `engine_kwargs.trtllm.*` 传递 TensorRT-LLM 参数：
 
 ```bash
-# 转换模型
-trtllm-build --model-path /path/to/model --output-dir /path/to/engine
++actor_rollout_ref.rollout.engine_kwargs.trtllm.batch_wait_timeout_iters=32 \
++actor_rollout_ref.rollout.engine_kwargs.trtllm.batch_wait_max_tokens_ratio=0.5
 ```
 
-## 选择指南
+不要把旧教程里的 `trtllm-build --model-path ...` 当成 verl 必需步骤；具体构建与 serving 参数以官方 `docs/workers/trtllm_worker.rst` 和示例脚本为准。
 
-| 场景 | 推荐引擎 |
-|------|----------|
-| 标准 RL 训练 | vLLM |
-| AgentRL / 多轮 | SGLang |
-| 快速实验 / 调试 | HF |
-| 生产部署 | TRTLLM |
-
-## 性能优化
-
-### vLLM 调优
+## HF
 
 ```bash
-# 增大 GPU 内存利用率（在 OOM 限制内）
-actor_rollout_ref.rollout.gpu_memory_utilization=0.7
-
-# 调整批处理大小
-actor_rollout_ref.rollout.max_num_batched_tokens=16384
-actor_rollout_ref.rollout.max_num_seqs=2048
+actor_rollout_ref.rollout.name=hf \
+actor_rollout_ref.rollout.n=1
 ```
 
-### SGLang 调优
+HF rollout 主要用于调试，不建议作为高吞吐训练配置。
 
-```bash
-# Server 模式减少启动开销
-actor_rollout_ref.rollout.multi_turn.server_mode=true
+## 性能调参顺序
 
-# 调整内存
-actor_rollout_ref.rollout.gpu_memory_utilization=0.6
-```
+1. 先确认生成正确：`rollout.n=1`，小 batch。
+2. 再增大 `rollout.n`，观察 reward 方差和吞吐。
+3. 调 `tensor_model_parallel_size`，让单次生成不 OOM。
+4. 调 `gpu_memory_utilization`，给训练和 rollout 留出余量。
+5. 最后再加 engine-specific kwargs。
 
-## 下一步
+## 常见错误
 
-- [09-data-and-reward](../09-data-and-reward/) - 数据与奖励
+| 现象 | 处理 |
+| --- | --- |
+| rollout OOM | 降低 `n`、`max_num_batched_tokens`、`gpu_memory_utilization` |
+| vLLM/SGLang 参数不生效 | 检查是否加了 `+actor_rollout_ref.rollout.engine_kwargs.<backend>.*` |
+| 多轮工具不触发 | 检查 `multi_turn.enable`、工具路径、`agent.default_agent_loop` |
+| TRTLLM import/build 失败 | 使用官方 Docker 或确认 `pip install -e .[trtllm]` 完成 |

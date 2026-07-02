@@ -1,123 +1,120 @@
 # 09-3 - 奖励配置
 
-本章介绍如何配置奖励函数。
+v0.8.0 推荐把奖励相关配置统一写在 `reward.*` 下。旧脚本里可能还能看到顶层 `custom_reward_function.*` 或 `reward_model.*`，那是兼容字段；新教程统一使用当前 `reward/reward.yaml` 的结构。
 
-## 奖励类型
+## 三种奖励来源
 
-| 类型 | 说明 | 配置 |
-|------|------|------|
-| 函数奖励 | 基于规则的奖励 | 默认，需自定义 |
-| 模型奖励 | 使用 Reward Model | `reward.reward_model.enable=True` |
+| 类型 | 用途 | 配置入口 |
+| --- | --- | --- |
+| 函数奖励 | 数学、代码、格式、可验证任务 | `reward.custom_reward_function.*` |
+| Reward Manager | 控制如何批量计算/聚合奖励 | `reward.reward_manager.*` |
+| Reward Model | 使用模型打分，支持 discriminative/generative RM | `reward.reward_model.*` |
 
-## 函数奖励
-
-### 默认奖励函数
-
-verl 默认使用函数奖励，需要实现 `reward_function`：
+## 自定义函数奖励
 
 ```python
-# reward_function.py
-def reward_function(data_source, solution_str, ground_truth, **kwargs):
-    """
-    计算奖励值
-
-    Args:
-        data_source: 原始输入
-        solution_str: 模型生成的回答
-        ground_truth: 标准答案
-
-    Returns:
-        float: 奖励值
-    """
-    # 示例：数学答案匹配
-    try:
-        # 提取数字答案
-        predicted = extract_answer(solution_str)
-        expected = float(ground_truth)
-
-        if abs(predicted - expected) < 1e-6:
-            return 1.0  # 正确
-        else:
-            return 0.0  # 错误
-    except:
-        return 0.0  # 格式错误
-
-def extract_answer(text):
-    """从文本中提取答案"""
-    # 实现答案提取逻辑
-    import re
-    match = re.search(r'####\s*(-?[\d,]+\.?\d*)', text)
-    if match:
-        return float(match.group(1).replace(',', ''))
-    return None
+# reward_fn.py
+def compute_score(data_source, solution_str, ground_truth, extra_info=None):
+    if ground_truth is None:
+        return 0.0
+    return 1.0 if str(ground_truth).strip() in solution_str else 0.0
 ```
 
-### 配置使用
+启动：
 
 ```bash
 python -m verl.trainer.main_ppo \
-    reward.reward_function.path=./reward_function.py \
-    reward.reward_function.name=reward_function \
-    ...
+  reward.custom_reward_function.path=$PWD/reward_fn.py \
+  reward.custom_reward_function.name=compute_score
 ```
 
-## 模型奖励
+函数参数应包含：
 
-### 启用 Reward Model
+- `data_source`：数据来源，默认来自 `data.reward_fn_key=data_source`。
+- `solution_str`：模型生成文本。
+- `ground_truth`：parquet 中 `reward_model.ground_truth`。
+- `extra_info`：预处理脚本塞入的额外字段。
+
+函数可以返回 float，也可以返回 dict；返回 dict 时应包含 `score`。
+
+## Reward Manager
+
+默认 manager 是 `naive`：
 
 ```bash
-reward.reward_model.enable=True
-reward.reward_model.model_path=sfairXC/FsfairX-LLaMA3-RM-v0.1
+reward.reward_manager.name=naive
 ```
 
-### 完整配置
+DAPO / GDPO 等算法会使用自己的 manager：
+
+```bash
+reward.reward_manager.name=dapo
+reward.reward_manager.name=gdpo
+```
+
+自定义 manager 见 [12-3-reward-manager.md](../../part2-research-extension/12-custom-algorithm/12-3-reward-manager.md)。
+
+## Reward Model
 
 ```bash
 python -m verl.trainer.main_ppo \
-    reward.reward_model.enable=True \
-    reward.reward_model.model_path=$HOME/models/FsfairX-LLaMA3-RM-v0.1 \
-    reward.reward_model.rollout.name=vllm \
-    reward.reward_model.rollout.tensor_model_parallel_size=1 \
-    reward.reward_model.rollout.gpu_memory_utilization=0.8 \
-    reward.reward_model.rollout.prompt_length=2048 \
-    reward.reward_model.rollout.response_length=1024 \
-    ...
+  reward.reward_model.enable=True \
+  reward.reward_model.model_path=$HOME/models/reward_model \
+  reward.reward_model.rollout.name=vllm \
+  reward.reward_model.rollout.tensor_model_parallel_size=1 \
+  reward.reward_model.rollout.gpu_memory_utilization=0.5
 ```
 
-### 资源池配置
-
-将 Reward Model 放在独立 GPU 上：
+如果 Reward Model 单独占资源池：
 
 ```bash
-reward.reward_model.enable_resource_pool=True
-reward.reward_model.nnodes=1
+reward.reward_model.enable_resource_pool=True \
+reward.reward_model.nnodes=1 \
 reward.reward_model.n_gpus_per_node=2
 ```
 
-## 混合奖励
+## 函数奖励 + Reward Model
 
-可以同时使用函数奖励和模型奖励：
+Generative Reward Model 或“模型先打分、函数再解析”的场景会同时使用两者：
 
 ```bash
-# 模型奖励作为 baseline，函数奖励作为主要信号
-reward.reward_model.enable=True
-reward.reward_function.path=./reward_function.py
+reward.reward_model.enable=True \
+reward.reward_model.model_path=$HOME/models/genrm \
+reward.custom_reward_function.path=$PWD/parse_genrm_score.py \
+reward.custom_reward_function.name=compute_score
 ```
 
-## 奖励计算配置
+## 并行度
 
 ```bash
-# 奖励计算并行度
 reward.num_workers=8
-
-# 奖励归一化
-algorithm.norm_adv_by_std_in_grpo=True
-
-# KL 惩罚（在奖励中）
-algorithm.use_kl_in_reward=True
-algorithm.kl_ctrl.kl_coef=0.01
 ```
 
-## 下一步
+这个值控制 reward manager 并行 worker 数。工具调用或代码执行型 reward 如果很慢，优先调这个值和外部 sandbox 并发限制。
 
-- [10-operations](../10-operations/) - 运维与监控
+## 数据字段要求
+
+默认 reward manager 会从每条样本中读取：
+
+```python
+{
+  "data_source": "openai/gsm8k",
+  "reward_model": {"style": "rule", "ground_truth": "42"},
+  "extra_info": {"split": "train", "index": 0}
+}
+```
+
+如果你的数据源字段不是 `data_source`：
+
+```bash
+data.reward_fn_key=my_source_key
+```
+
+## 常见错误
+
+| 错误写法 | v0.8.0 推荐写法 |
+| --- | --- |
+| `reward.reward_function.path` | `reward.custom_reward_function.path` |
+| `reward.reward_function.name` | `reward.custom_reward_function.name` |
+| `reward.reward_model.path` | `reward.reward_model.model_path` |
+| `reward.reward_manager=my_rm` | `reward.reward_manager.name=my_rm` |

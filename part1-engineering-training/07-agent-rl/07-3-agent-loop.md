@@ -1,147 +1,85 @@
 # 07-3 - Agent Loop 训练
 
-Agent Loop 是完整的 Agent 训练框架，支持复杂的多步任务。
+AgentLoop 是“怎么与环境交互”的代码层抽象。Tool Calling 只是 AgentLoop 的一种形态；你也可以实现搜索、浏览器、LangGraph、游戏环境、代码沙箱等更复杂的 loop。
 
-## 概述
-
-verl 的 Agent Loop 支持：
-
-- 环境交互（Sandbox、代码执行器等）
-- 长轨迹训练
-- 多种工具集成
-- Partial Rollout 优化
-
-## 训练脚本
-
-### 基础 Agent Loop
+## v0.8.0 配置入口
 
 ```bash
-#!/bin/bash
-# run_agent_loop.sh
+actor_rollout_ref.rollout.agent.num_workers=8 \
+actor_rollout_ref.rollout.agent.default_agent_loop=single_turn_agent \
+actor_rollout_ref.rollout.agent.agent_loop_config_path=/path/to/agent_loop.yaml
+```
 
+常见内置 loop：
+
+| 名称 | 用途 |
+| --- | --- |
+| `single_turn_agent` | 默认单轮 rollout |
+| `tool_agent` | 工具调用式多轮 rollout |
+
+如果数据中有 `agent_name` 字段，rollout 可以按样本选择 agent；否则使用 `default_agent_loop`。
+
+## 训练脚本骨架
+
+```bash
 python -m verl.trainer.main_ppo \
-    algorithm.adv_estimator=grpo \
-    \
-    data.train_files=$HOME/data/agent_train.parquet \
-    data.val_files=$HOME/data/agent_val.parquet \
-    data.train_batch_size=128 \
-    data.max_prompt_length=512 \
-    data.max_response_length=2048 \
-    \
-    actor_rollout_ref.model.path=Qwen/Qwen2.5-7B-Instruct \
-    actor_rollout_ref.actor.optim.lr=1e-6 \
-    actor_rollout_ref.actor.ppo_mini_batch_size=32 \
-    actor_rollout_ref.actor.use_kl_loss=True \
-    actor_rollout_ref.model.enable_gradient_checkpointing=True \
-    \
-    actor_rollout_ref.rollout.name=sglang \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
-    actor_rollout_ref.rollout.n=4 \
-    actor_rollout_ref.rollout.multi_turn.enable=true \
-    actor_rollout_ref.rollout.multi_turn.max_assistant_turns=20 \
-    \
-    reward.num_workers=4 \
-    \
-    trainer.critic_warmup=0 \
-    trainer.n_gpus_per_node=8 \
-    trainer.total_epochs=10 \
-    trainer.logger='["console","wandb"]' \
-    trainer.project_name='agent_loop' \
-    trainer.experiment_name='qwen2_5_7b'
+  algorithm.adv_estimator=grpo \
+  data.train_files=$HOME/data/gsm8k/train.parquet \
+  data.val_files=$HOME/data/gsm8k/test.parquet \
+  data.return_raw_chat=True \
+  data.max_prompt_length=1024 \
+  data.max_response_length=2048 \
+  actor_rollout_ref.model.path=Qwen/Qwen2.5-3B-Instruct \
+  actor_rollout_ref.rollout.name=sglang \
+  actor_rollout_ref.rollout.n=8 \
+  actor_rollout_ref.rollout.multi_turn.enable=True \
+  actor_rollout_ref.rollout.multi_turn.function_tool_path=$PWD/tools.py \
+  actor_rollout_ref.rollout.agent.default_agent_loop=tool_agent \
+  reward.custom_reward_function.path=$PWD/reward_fn.py \
+  reward.custom_reward_function.name=compute_score \
+  trainer.n_gpus_per_node=8 \
+  trainer.logger='["console"]'
 ```
 
-### GSM8K Tool Agent Loop
+## 自定义 AgentLoop 的思路
+
+1. 继承官方 agent loop 基类或参考 `verl/experimental/agent_loop/` 中的实现。
+2. 保持 token 与文本的一致性：训练要用 rollout 引擎实际生成的 token。
+3. 把外部环境调用封装成工具或 async client，避免阻塞 GPU。
+4. 在 parquet 中加入必要的 `extra_info`，比如 task id、工具参数、ground truth。
+5. 用 trace 先观察每轮消息，再放大 batch。
+
+## AgentLoop 配置文件
+
+复杂 agent 可以把参数放到 `agent_loop_config_path`：
+
+```yaml
+# agent_loop.yaml
+tool_agent:
+  max_steps: 4
+  stop_on_tool_error: false
+  trace_tool_output: true
+```
+
+启动时：
 
 ```bash
-#!/bin/bash
-# run_gsm8k_tool_agent.sh - from examples/sglang_multiturn
-
-set -x
-
-python -m verl.trainer.main_ppo \
-    algorithm.adv_estimator=grpo \
-    algorithm.gamma=1.0 \
-    algorithm.lam=1.0 \
-    \
-    data.train_files=$HOME/data/gsm8k/train.parquet \
-    data.val_files=$HOME/data/gsm8k/test.parquet \
-    data.train_batch_size=256 \
-    data.max_prompt_length=512 \
-    data.max_response_length=1024 \
-    data.tool_provider=gsm8k_tool_agent \
-    \
-    actor_rollout_ref.model.path=Qwen/Qwen2.5-3B-Instruct \
-    actor_rollout_ref.actor.optim.lr=1e-6 \
-    actor_rollout_ref.actor.ppo_mini_batch_size=64 \
-    actor_rollout_ref.actor.use_kl_loss=True \
-    actor_rollout_ref.actor.kl_loss_coef=0.001 \
-    actor_rollout_ref.model.enable_gradient_checkpointing=True \
-    \
-    actor_rollout_ref.rollout.name=sglang \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
-    actor_rollout_ref.rollout.n=5 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.5 \
-    actor_rollout_ref.rollout.multi_turn.enable=true \
-    actor_rollout_ref.rollout.multi_turn.max_assistant_turns=5 \
-    \
-    actor_rollout_ref.ref.fsdp_config.param_offload=True \
-    \
-    trainer.critic_warmup=0 \
-    trainer.n_gpus_per_node=4 \
-    trainer.total_epochs=15
+actor_rollout_ref.rollout.agent.agent_loop_config_path=$PWD/agent_loop.yaml
 ```
 
-## 工具配置
+## 何时需要自定义 loop
 
-### Python 执行器
+| 场景 | 是否需要 |
+| --- | --- |
+| 只做数学答案验证 | 通常不需要，自定义 reward 即可 |
+| 调用无状态函数工具 | 不一定，`function_tool_path` 足够 |
+| 每个样本有独立沙箱/浏览器/数据库状态 | 需要 BaseTool 或自定义 AgentLoop |
+| 需要 LangGraph/ReAct/规划器 | 通常需要自定义 AgentLoop |
+| 要训练多 agent 协作 | 需要自定义 AgentLoop 和数据协议 |
 
-```bash
-actor_rollout_ref.rollout.multi_turn.tool.dict.python_executor=true
-```
+## 常见坑
 
-### 代码沙箱
-
-```bash
-actor_rollout_ref.rollout.multi_turn.tool.sandbox_fusion.enable=true
-actor_rollout_ref.rollout.multi_turn.tool.sandbox_fusion.server_url=http://localhost:8080
-```
-
-### 搜索工具
-
-```bash
-actor_rollout_ref.rollout.multi_turn.tool.search.enable=true
-actor_rollout_ref.rollout.multi_turn.tool.search.engine=google
-```
-
-## 环境配置
-
-### 启动 Sandbox Server
-
-```bash
-# 启动代码沙箱
-docker run -d -p 8080:8080 --name sandbox \
-    --privileged \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    sandbox-fusion:latest
-```
-
-### 配置 SGLang Server
-
-```bash
-# 使用 Server 模式（推荐）
-actor_rollout_ref.rollout.multi_turn.server_mode=true
-actor_rollout_ref.rollout.multi_turn.server.port=30000
-```
-
-## 示例项目
-
-| 项目 | 描述 | 链接 |
-|------|------|------|
-| Search-R1 | 搜索+推理 | github.com/PeterGriffinJin/Search-R1 |
-| RAGEN | 通用 Agent | github.com/ZihanWang314/ragen |
-| OpenManus-RL | Agent 训练 | github.com/OpenManus/OpenManus-RL |
-| verl-agent | 长程 Agent | github.com/langfengQ/verl-agent |
-
-## 下一步
-
-- [08-distributed-training](../08-distributed-training/) - 分布式训练
+- 不要用 `data.tool_provider`。v0.8.0 的选择入口是 `agent.default_agent_loop` 或数据里的 `agent_name`。
+- 不要让工具返回无限长文本，要设置 `max_tool_response_length`。
+- 工具调用失败不是总是训练失败；先看 trace，再决定 reward 是否惩罚。
+- 多轮任务先用 `rollout.n=1` 调试格式，再增加采样数。

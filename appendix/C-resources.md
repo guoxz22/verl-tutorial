@@ -8,11 +8,11 @@
 
 - [verl 官方文档](https://verl.readthedocs.io/)
 - [HybridFlow 论文](https://arxiv.org/abs/2409.19256)
-- [GitHub 仓库](https://github.com/volcengine/verl)
+- [GitHub 仓库](https://github.com/verl-project/verl)
 
 ### 示例代码
 
-- [examples/](https://github.com/volcengine/verl/tree/main/examples) - 官方示例
+- [examples/](https://github.com/verl-project/verl/tree/main/examples) - 官方示例
 - [recipe/](https://github.com/verl-project/verl-recipe) - 算法配方
 
 ## 社区项目
@@ -76,19 +76,19 @@
 
 ### 如何贡献
 
-1. Fork [verl 仓库](https://github.com/volcengine/verl)
-2. 阅读 [贡献指南](https://github.com/volcengine/verl/blob/main/CONTRIBUTING.md)
+1. Fork [verl 仓库](https://github.com/verl-project/verl)
+2. 阅读 [贡献指南](https://github.com/verl-project/verl/blob/main/CONTRIBUTING.md)
 3. 提交 Pull Request
 
 ### 报告问题
 
-- [GitHub Issues](https://github.com/volcengine/verl/issues)
+- [GitHub Issues](https://github.com/verl-project/verl/issues)
 
 ## 持续更新
 
 verl 正在快速发展，建议：
 
-1. 关注 [GitHub Releases](https://github.com/volcengine/verl/releases)
+1. 关注 [GitHub Releases](https://github.com/verl-project/verl/releases)
 2. 加入 [Slack 社区](https://join.slack.com/t/verl-project/)
 3. 关注 [Twitter](https://twitter.com/verl_project)
 

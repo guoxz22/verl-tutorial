@@ -1,4 +1,4 @@
-# 06-2 - 模型规模与调参
+﻿# 06-2 - 模型规模与调参
 
 不同规模的模型需要不同的配置策略。
 
@@ -172,7 +172,7 @@ python -m verl.trainer.main_ppo \
     \
     actor_rollout_ref.rollout.name=vllm \
     actor_rollout_ref.rollout.tensor_model_parallel_size=8 \
-    actor_rollout_ref.rollout.expert_model_parallel_size=8 \
+    actor_rollout_ref.rollout.expert_parallel_size=8 \
     actor_rollout_ref.rollout.n=4 \
     \
     trainer.n_gpus_per_node=8 \

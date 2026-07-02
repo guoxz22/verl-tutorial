@@ -1,4 +1,4 @@
-# 03 - 核心概念
+﻿# 03 - 核心概念
 
 理解 verl 的核心抽象是使用和扩展框架的基础。
 
@@ -82,9 +82,9 @@ critic.optim.lr=1e-5
 
 | 引擎 | 特点 | 配置 |
 |------|------|------|
-| vLLM | 高吞吐 | `rollout.name=vllm` |
-| SGLang | 多轮、Agent | `rollout.name=sglang` |
-| TRTLLM | NVIDIA 优化 | `rollout.name=trtllm` |
+| vLLM | 高吞吐 | `actor_rollout_ref.rollout.name=vllm` |
+| SGLang | 多轮、Agent | `actor_rollout_ref.rollout.name=sglang` |
+| TRTLLM | NVIDIA 优化 | `actor_rollout_ref.rollout.name=trtllm` |
 
 **配置示例**：
 
