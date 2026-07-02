@@ -1,7 +1,7 @@
 # 07-2 - 多轮对话 RL 训练
 
 <!-- NAV_START -->
-> 阅读： [← 07-1 - Tool Calling 训练](07-1-tool-calling.md) · [目录](../../README.md#完整目录) · [07-3 - Agent Loop 训练 →](07-3-agent-loop.md)
+> 阅读： [← 07-1 - Tool Calling 训练](07-1-tool-calling.md) · [目录](../../README.md#catalog) · [07-3 - Agent Loop 训练 →](07-3-agent-loop.md)
 <!-- NAV_END -->
 
 多轮 RL 解决的是：一次样本不再只有 `prompt -> response`，而是可能包含多轮 assistant、tool、user 交互。v0.8.0 把这部分统一放在 `actor_rollout_ref.rollout.multi_turn` 下。
@@ -98,5 +98,5 @@ v0.8.0 的 server/async 能力由 rollout `mode`、后端适配器、`agent` 和
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 07-1 - Tool Calling 训练](07-1-tool-calling.md) · [目录](../../README.md#完整目录) · [07-3 - Agent Loop 训练 →](07-3-agent-loop.md)
+> 阅读： [← 07-1 - Tool Calling 训练](07-1-tool-calling.md) · [目录](../../README.md#catalog) · [07-3 - Agent Loop 训练 →](07-3-agent-loop.md)
 <!-- NAV_BOTTOM_END -->

@@ -1,7 +1,7 @@
 # 10-2 - 检查点管理
 
 <!-- NAV_START -->
-> 阅读： [← 10-1 - 训练监控](10-1-monitoring.md) · [目录](../../README.md#完整目录) · [10-3 - 性能分析与调优 →](10-3-profiling.md)
+> 阅读： [← 10-1 - 训练监控](10-1-monitoring.md) · [目录](../../README.md#catalog) · [10-3 - 性能分析与调优 →](10-3-profiling.md)
 <!-- NAV_END -->
 
 本章介绍如何保存、恢复和管理训练检查点。
@@ -108,5 +108,5 @@ trainer.del_local_ckpt_after_load=True
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 10-1 - 训练监控](10-1-monitoring.md) · [目录](../../README.md#完整目录) · [10-3 - 性能分析与调优 →](10-3-profiling.md)
+> 阅读： [← 10-1 - 训练监控](10-1-monitoring.md) · [目录](../../README.md#catalog) · [10-3 - 性能分析与调优 →](10-3-profiling.md)
 <!-- NAV_BOTTOM_END -->

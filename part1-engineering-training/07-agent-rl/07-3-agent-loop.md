@@ -1,7 +1,7 @@
 # 07-3 - Agent Loop 训练
 
 <!-- NAV_START -->
-> 阅读： [← 07-2 - 多轮对话 RL 训练](07-2-multi-turn.md) · [目录](../../README.md#完整目录) · [08-1 - 单机多卡训练 →](../08-distributed-training/08-1-single-node.md)
+> 阅读： [← 07-2 - 多轮对话 RL 训练](07-2-multi-turn.md) · [目录](../../README.md#catalog) · [08-1 - 单机多卡训练 →](../08-distributed-training/08-1-single-node.md)
 <!-- NAV_END -->
 
 AgentLoop 是“怎么与环境交互”的代码层抽象。Tool Calling 只是 AgentLoop 的一种形态；搜索、浏览器、LangGraph、游戏环境、代码沙箱等更复杂的 loop 也可以放在这一层实现。
@@ -91,5 +91,5 @@ actor_rollout_ref.rollout.agent.agent_loop_config_path=$PWD/agent_loop.yaml
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 07-2 - 多轮对话 RL 训练](07-2-multi-turn.md) · [目录](../../README.md#完整目录) · [08-1 - 单机多卡训练 →](../08-distributed-training/08-1-single-node.md)
+> 阅读： [← 07-2 - 多轮对话 RL 训练](07-2-multi-turn.md) · [目录](../../README.md#catalog) · [08-1 - 单机多卡训练 →](../08-distributed-training/08-1-single-node.md)
 <!-- NAV_BOTTOM_END -->
