@@ -1,7 +1,7 @@
 # 06-1 - SFT 基础训练
 
 <!-- NAV_START -->
-> 阅读： [← 05-5 - 其他算法](../05-algorithms/05-5-other-algos.md) · [目录](../../README.md#catalog) · [06-2 - 模型规模与调参 →](06-2-model-tuning.md)
+> 阅读： [← 05-6 - On-Policy Distillation 训练](../05-algorithms/05-6-opd.md) · [目录](../../README.md#catalog) · [06-2 - 模型规模与调参 →](06-2-model-tuning.md)
 <!-- NAV_END -->
 
 SFT 在 v0.8.0 中使用统一入口：
@@ -99,5 +99,5 @@ critic.model.path=/path/to/sft/checkpoint/huggingface
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 05-5 - 其他算法](../05-algorithms/05-5-other-algos.md) · [目录](../../README.md#catalog) · [06-2 - 模型规模与调参 →](06-2-model-tuning.md)
+> 阅读： [← 05-6 - On-Policy Distillation 训练](../05-algorithms/05-6-opd.md) · [目录](../../README.md#catalog) · [06-2 - 模型规模与调参 →](06-2-model-tuning.md)
 <!-- NAV_BOTTOM_END -->

@@ -1,7 +1,7 @@
 # 05-5 - 其他算法
 
 <!-- NAV_START -->
-> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#catalog) · [06-1 - SFT 基础训练 →](../06-sft-and-tuning/06-1-sft-basics.md)
+> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#catalog) · [05-6 - On-Policy Distillation 训练 →](05-6-opd.md)
 <!-- NAV_END -->
 
 本章不把所有算法写成论文综述，而是帮助读者在 v0.8.0 的官方示例目录中找到正确入口，并区分每个算法到底改的是 `adv_estimator` 还是 `policy_loss.loss_mode`。
@@ -24,7 +24,7 @@
 | `examples/sapo_trainer/` | SAPO | `policy_loss.loss_mode=sapo` |
 | `examples/otb_trainer/` | Optimal Token Baseline | `adv_estimator=optimal_token_baseline` |
 | `examples/mtp_trainer/` | Multi-Token-Prediction RL | `actor_rollout_ref.model.mtp.*` |
-| `examples/on_policy_distillation_trainer/` | On-Policy Distillation | `distillation.enabled=True` |
+| `examples/on_policy_distillation_trainer/` | [On-Policy Distillation](05-6-opd.md) | `distillation.enabled=True` |
 
 > 不要把 `adv_estimator` 和 `policy_loss.loss_mode` 混在一起。前者决定 advantage 如何算，后者决定 policy loss 如何聚合/裁剪。
 
@@ -75,6 +75,7 @@ python -m verl.trainer.main_ppo \
 | 大 MoE / 序列级稳定性 | GSPO / GMPO | 更关注序列级或几何平均聚合 |
 | 复现特定论文 | 对应 examples 或 recipe | 先跑官方脚本，再改数据和模型 |
 | 多 token prediction / speculative head | MTP | 只在支持 MTP 架构和后端时使用 |
+| 有强教师、奖励稀疏或难设计 | OPD | 学生 on-policy rollout，教师给 token 级监督 |
 
 ## 正确查看示例
 
@@ -86,6 +87,7 @@ cat examples/README.md
 ls examples/grpo_trainer
 ls examples/gspo_trainer
 ls examples/mtp_trainer
+ls examples/on_policy_distillation_trainer
 
 # 研究型配方
 ls recipe
@@ -96,10 +98,10 @@ ls recipe
 1. 先把 GRPO 跑通，理解 `rollout.n`、`train_batch_size`、reward。
 2. 再看 PPO，理解 critic 与 value loss。
 3. 然后区分两类扩展：只改 advantage 的算法，以及只改 policy loss 的算法。
-4. 最后再研究 MTP、on-policy distillation、fully async 等高级能力。
+4. 最后再研究 [OPD](05-6-opd.md)、MTP、fully async 等高级能力。
 
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#catalog) · [06-1 - SFT 基础训练 →](../06-sft-and-tuning/06-1-sft-basics.md)
+> 阅读： [← 05-4 - RLOO / ReMax 详解](05-4-rloo-remax.md) · [目录](../../README.md#catalog) · [05-6 - On-Policy Distillation 训练 →](05-6-opd.md)
 <!-- NAV_BOTTOM_END -->

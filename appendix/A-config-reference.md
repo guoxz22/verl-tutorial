@@ -123,6 +123,41 @@
 | `reward.reward_model.enable_resource_pool` | `False` | RM 是否单独资源池 |
 | `reward.sandbox_fusion.url` | `null` | Sandbox Fusion 地址 |
 
+## Distillation / OPD
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `distillation.enabled` | `False` | 是否开启 On-Policy Distillation |
+| `distillation.n_gpus_per_node` | `8` | 教师资源池每节点 GPU 数；开启 OPD 时需要按教师规模设置 |
+| `distillation.nnodes` | `0` | 教师资源池节点数；开启 OPD 时至少为 `1` |
+| `distillation.teacher_key` | `data_source` | 多教师路由字段 |
+| `distillation.teacher_models.teacher_model.model_path` | `null` | 单教师模型路径；开启 OPD 时必填 |
+| `distillation.teacher_models.teacher_model.num_replicas` | `0` | 教师副本数；单教师可由资源池推导，多教师建议显式设置 |
+| `distillation.teacher_models.teacher_model.inference.name` | 继承 rollout | 教师推理后端，常用 `vllm` 或 `sglang` |
+| `distillation.teacher_models.teacher_model.inference.tensor_model_parallel_size` | `2` | 教师推理 TP |
+| `distillation.teacher_models.teacher_model.inference.gpu_memory_utilization` | `0.5` | 教师推理显存比例 |
+| `distillation.teacher_models.teacher_model.inference.max_model_len` | `null` | 教师可处理的最大上下文；需覆盖 prompt + response + 1 |
+| `distillation.distillation_loss.loss_mode` | `k3` | `k1`、`k3`、`forward_kl_topk` 等 |
+| `distillation.distillation_loss.topk` | `32` | top-k 蒸馏损失使用的 token 数 |
+| `distillation.distillation_loss.use_task_rewards` | `True` | 是否混合任务 reward |
+| `distillation.distillation_loss.distillation_loss_coef` | `1.0` | 混合 reward 时蒸馏损失权重 |
+| `distillation.distillation_loss.use_policy_gradient` | `False` | 是否把蒸馏信号作为 policy-gradient reward |
+| `distillation.distillation_loss.policy_loss_mode` | `vanilla` | PG 路径使用的 policy loss；v0.8.0 仅支持 `vanilla` |
+
+常见搭配：
+
+```bash
+# PG OPD
+distillation.distillation_loss.loss_mode=k1
+distillation.distillation_loss.use_policy_gradient=True
+
+# Supervised OPD
+distillation.distillation_loss.loss_mode=forward_kl_topk
+distillation.distillation_loss.use_policy_gradient=False
+```
+
+多教师时不要把默认的 `teacher_models.teacher_model` 和自定义 teacher entry 混用。建议统一使用 `+distillation.teacher_models.math.*`、`+distillation.teacher_models.code.*` 这类显式名字。
+
 ## Trainer
 
 | 参数 | 默认值 | 说明 |

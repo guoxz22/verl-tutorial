@@ -24,6 +24,7 @@ verl = Ray 分布式编排 + Hydra 配置 + PyTorch 训练后端 + 高吞吐 rol
 | Rollout | 用 vLLM/SGLang/HF/TRTLLM 等后端批量生成样本 |
 | Reference | 参考策略，用于 KL 或 logprob 对比 |
 | Critic | 价值模型，PPO/GAE 常用；GRPO/RLOO 等可不用 |
+| Teacher | OPD 场景下的冻结强模型，为学生轨迹提供 logprob / top-k 分布 |
 | Reward | 函数奖励、Reward Manager、Reward Model、Sandbox |
 | Trainer | RayPPOTrainer 负责调度数据流和 worker |
 
@@ -37,7 +38,7 @@ verl = Ray 分布式编排 + Hydra 配置 + PyTorch 训练后端 + 高吞吐 rol
 | greedy baseline | ReMax | `algorithm.adv_estimator=remax` |
 | policy-gradient baseline | REINFORCE++ / GPG | `reinforce_plus_plus` / `gpg` |
 | policy loss 变体 | GSPO / SAPO / CISPO / GMPO / DPPO | `actor_rollout_ref.actor.policy_loss.loss_mode=*` |
-| 特殊训练 | MTP / on-policy distillation | `examples/mtp_trainer` / `distillation.enabled=True` |
+| 特殊训练 | MTP / OPD | `examples/mtp_trainer` / `distillation.enabled=True` |
 
 ## 训练后端
 
