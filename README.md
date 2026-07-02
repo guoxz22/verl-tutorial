@@ -20,6 +20,7 @@ verl 是大模型后训练框架，核心目标是把策略模型、价值模型
 | --- | --- |
 | 官方仓库 | `https://github.com/verl-project/verl` |
 | PPO/GRPO 入口 | `python -m verl.trainer.main_ppo` |
+| Trainer 数据流 | 入门用 `main_ppo`；TransferQueue 路径用 `main_ppo_sync`；fully async 入口在 `verl.experimental.fully_async_policy.fully_async_main` |
 | OPD 入口 | `examples/on_policy_distillation_trainer/` + `distillation.enabled=True` |
 | SFT 入口 | `torchrun ... -m verl.trainer.sft_trainer` |
 | Reward 配置 | 推荐 `reward.custom_reward_function.*`、`reward.reward_model.*`、`reward.reward_manager.*` |
@@ -35,7 +36,7 @@ verl 是大模型后训练框架，核心目标是把策略模型、价值模型
 | 能力 | 教程位置 | 读法 |
 | --- | --- | --- |
 | OPD / 多教师蒸馏 | [05-6 OPD 训练](part1-engineering-training/05-algorithms/05-6-opd.md) | 像读 PPO/GRPO 一样读：概念、脚本、配置、排错 |
-| Trainer 数据流与核心抽象 | [03 核心概念](part0-foundation/03-core-concepts.md)、[10-1 训练监控](part1-engineering-training/10-operations/10-1-monitoring.md) | 先理解 RayPPOTrainer/DataProto，再看日志 |
+| Trainer 数据流、TransferQueue、fully async | [03 核心概念](part0-foundation/03-core-concepts.md)、[08-5 Trainer 数据流](part1-engineering-training/08-distributed-training/08-5-trainer-dataflow.md)、[10-1 训练监控](part1-engineering-training/10-operations/10-1-monitoring.md) | 先理解 DataProto，再选择 `main_ppo` / `main_ppo_sync` / `fully_async_main` |
 | Megatron / VeOmni / TorchTitan 后端 | [08-3 训练后端选择](part1-engineering-training/08-distributed-training/08-3-backends.md) | 先选后端，再改 `model_engine` |
 | vLLM / SGLang / TRTLLM rollout | [08-4 推理引擎配置](part1-engineering-training/08-distributed-training/08-4-inference-engine.md) | 对照显存、吞吐和多轮需求 |
 | Agentic RL / 工具调用 | [07 Agent RL](part1-engineering-training/07-agent-rl/07-1-tool-calling.md) | 从 tool calling 到 multi-turn，再到 agent loop |
@@ -87,7 +88,7 @@ verl-tutorial/
 
 1. [00-04 基础章节](#part0-foundation)：掌握 verl 的组件、配置树和最小命令。
 2. [05 算法章节](#section-05-algorithms)：根据任务选择 PPO、GRPO、RLOO、ReMax、GPG、GSPO、OPD 等。
-3. [08 分布式章节](#section-08-distributed)：确定 FSDP/FSDP2/Megatron/VeOmni 与 rollout 后端。
+3. [08 分布式章节](#section-08-distributed)：确定 FSDP/FSDP2/Megatron/VeOmni、rollout 后端和 Trainer 数据流。
 4. [09 数据与奖励章节](#section-09-data-reward)：准备 parquet、奖励函数、Reward Model。
 5. [10 运维章节](#section-10-operations)：监控、checkpoint、profiling、集群调度。
 6. [06 SFT](#section-06-sft) / [07 AgentRL](#section-07-agent-rl)：按任务补齐监督微调或工具调用训练。
@@ -165,6 +166,7 @@ verl-tutorial/
 | 08-2 | 多机训练 | [进入](part1-engineering-training/08-distributed-training/08-2-multi-node.md) |
 | 08-3 | 训练后端选择 | [进入](part1-engineering-training/08-distributed-training/08-3-backends.md) |
 | 08-4 | 推理引擎配置 | [进入](part1-engineering-training/08-distributed-training/08-4-inference-engine.md) |
+| 08-5 | Trainer 数据流与同步/异步训练 | [进入](part1-engineering-training/08-distributed-training/08-5-trainer-dataflow.md) |
 
 <a id="section-09-data-reward"></a>
 
@@ -249,6 +251,14 @@ python -m verl.trainer.main_ppo \
   algorithm.adv_estimator=grpo \
   actor_rollout_ref.rollout.name=vllm
 
+# TransferQueue 同步 PPO 入口
+python -m verl.trainer.main_ppo_sync \
+  actor_rollout_ref.rollout.name=vllm
+
+# fully async 实验入口
+python -m verl.experimental.fully_async_policy.fully_async_main \
+  actor_rollout_ref.rollout.name=vllm
+
 # SFT 主入口
 torchrun --standalone --nnodes=1 --nproc_per_node=8 \
   -m verl.trainer.sft_trainer \
@@ -262,9 +272,11 @@ torchrun --standalone --nnodes=1 --nproc_per_node=8 \
 
 - `verl/trainer/config/_generated_ppo_trainer.yaml`
 - `verl/trainer/config/ppo_trainer.yaml`
+- `verl/trainer/main_ppo_sync.py`
 - `verl/trainer/config/sft_trainer_engine.yaml`
 - `verl/trainer/config/rollout/rollout.yaml`
 - `verl/trainer/config/reward/reward.yaml`
+- `verl/experimental/fully_async_policy/config/fully_async_ppo_trainer.yaml`
 - `examples/README.md`
 
 ## 许可证

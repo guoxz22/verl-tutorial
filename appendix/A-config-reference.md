@@ -12,6 +12,8 @@
 | --- | --- |
 | verl release | `v0.8.0` |
 | RL 入口 | `python -m verl.trainer.main_ppo` |
+| TransferQueue 同步 PPO 入口 | `python -m verl.trainer.main_ppo_sync` |
+| fully async 实验入口 | `python -m verl.experimental.fully_async_policy.fully_async_main` |
 | SFT 入口 | `torchrun ... -m verl.trainer.sft_trainer` |
 | PPO 生成配置 | `verl/trainer/config/_generated_ppo_trainer.yaml` |
 | SFT 配置 | `verl/trainer/config/sft_trainer_engine.yaml` |
@@ -70,17 +72,50 @@
 | 参数 | 默认值 | 说明 |
 | --- | --- | --- |
 | `actor_rollout_ref.rollout.name` | 必填 | `hf`、`vllm`、`sglang`、`trtllm` |
-| `actor_rollout_ref.rollout.mode` | `async` | 默认 async |
+| `actor_rollout_ref.rollout.mode` | `async` | `sync: LLM`，`async: AsyncLLM`；不要等同于 fully async training |
+| `actor_rollout_ref.rollout.nnodes` | `0` | 独立 rollout server 节点数；one-step-off / fully async 需要大于 0 |
+| `actor_rollout_ref.rollout.n_gpus_per_node` | `${trainer.n_gpus_per_node}` | 独立 rollout server 每节点 GPU 数 |
 | `actor_rollout_ref.rollout.tensor_model_parallel_size` | `2` | rollout TP |
 | `actor_rollout_ref.rollout.gpu_memory_utilization` | `0.5` | 推理后端显存比例 |
 | `actor_rollout_ref.rollout.n` | `1` | 每个 prompt 采样数 |
 | `actor_rollout_ref.rollout.temperature` | `1.0` | 采样温度 |
+| `actor_rollout_ref.rollout.top_k` | `-1` | vLLM rollout 用 `-1`；HF rollout 通常用 `0` |
 | `actor_rollout_ref.rollout.top_p` | `1.0` | top-p |
 | `actor_rollout_ref.rollout.max_num_batched_tokens` | `8192` | rollout batching token 上限 |
+| `actor_rollout_ref.rollout.calculate_log_probs` | `False` | 是否在 rollout 侧计算 log probs；fully async 会打开 |
 | `actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu` | `null` | rollout logprob micro batch |
 | `actor_rollout_ref.rollout.engine_kwargs.vllm` | `{}` | vLLM 专属参数，新增键要加 `+` |
 | `actor_rollout_ref.rollout.engine_kwargs.sglang` | `{}` | SGLang 专属参数 |
 | `actor_rollout_ref.rollout.engine_kwargs.trtllm` | `{}` | TRTLLM 专属参数 |
+
+## Trainer 数据流
+
+| 路径 | 入口 | 关键点 |
+| --- | --- | --- |
+| 标准 PPO/GRPO | `python -m verl.trainer.main_ppo` | 默认主路径，最适合学习、算法实验和常规训练 |
+| TransferQueue 同步 PPO | `python -m verl.trainer.main_ppo_sync` | 需要 `pip install TransferQueue==0.1.6`；引入 TransferQueue 与 ReplayBuffer |
+| fully async PPO | `python -m verl.experimental.fully_async_policy.fully_async_main` | 使用 `fully_async_ppo_trainer.yaml` / `fully_async_ppo_megatron_trainer.yaml` |
+
+`main_ppo_sync` 不是 fully async；v0.8.0 源码注释明确它是 synchronous PPO trainer with colocated actor and rollout。fully async 才会使用 `async_training.*` 和 top-level `rollout.*`。
+
+## Fully Async
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `rollout.nnodes` | `1` | fully async 配置里的 rollout server 节点数 |
+| `rollout.n_gpus_per_node` | `8` | rollout server 每节点 GPU 数 |
+| `rollout.n` | `4` | 每个 prompt 的 response 数，GRPO 常大于 1 |
+| `rollout.total_rollout_steps` | `100` | rollout 侧总生成步数 |
+| `data.gen_batch_size` | `1` | 生成侧 batch size；v0.8.0 配置注释说明当前只支持 1 |
+| `async_training.staleness_threshold` | `0.1` | 允许的样本陈旧度阈值 |
+| `async_training.trigger_parameter_sync_step` | `4` | trainer 获取若干批样本后触发参数同步 |
+| `async_training.require_batches` | `1` | FullyAsyncTrainer 一次获取的 PPO mini-batch 数 |
+| `async_training.partial_rollout` | `True` | 参数同步中断 rollout 时是否恢复生成 |
+| `async_training.use_trainer_do_validate` | `False` | 是否使用 trainer 执行验证 |
+| `actor_rollout_ref.rollout.calculate_log_probs` | `True` | fully async 必须打开，否则无法获得 rollout log probs |
+| `actor_rollout_ref.rollout.checkpoint_engine.backend` | `nccl` | fully async 默认 checkpoint engine 后端 |
+| `actor_rollout_ref.actor.use_rollout_log_probs` | `True` | actor 训练使用 rollout 侧 log probs |
+| `actor_rollout_ref.model.use_remove_padding` | `True` | fully async 配置默认打开 remove padding |
 
 ## Multi-turn / Agent
 

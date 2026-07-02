@@ -17,6 +17,7 @@
 ### 示例代码
 
 - [examples/](https://github.com/verl-project/verl/tree/main/examples) - 官方示例
+- [v0.8.0 examples/](https://github.com/verl-project/verl/tree/v0.8.0/examples) - 与本教程版本对齐的官方示例
 - [recipe/](https://github.com/verl-project/verl-recipe) - 算法配方
 
 ## 社区项目
@@ -65,6 +66,9 @@
 - [FSDP Tutorial](https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html)
 - [Megatron-LM](https://github.com/NVIDIA/Megatron-LM)
 - [DeepSpeed](https://github.com/microsoft/DeepSpeed)
+- [verl v0.8.0 TransferQueue 文档](https://github.com/verl-project/verl/blob/v0.8.0/docs/data/transfer_queue.md)
+- [verl v0.8.0 main_ppo_sync](https://github.com/verl-project/verl/blob/v0.8.0/verl/trainer/main_ppo_sync.py)
+- [verl v0.8.0 fully_async_policy](https://github.com/verl-project/verl/tree/v0.8.0/verl/experimental/fully_async_policy)
 
 ### 推理引擎
 
