@@ -2,6 +2,8 @@
 
 > 基于 `verl-project/verl` v0.8.0 | 更新日期：2026-07-03
 
+> 历史版本：原 v0.7.0 教程保留在 [`legacy/v0.7.0`](https://github.com/guoxz22/verl-tutorial/tree/legacy/v0.7.0) 分支。
+
 ## 这是什么
 
 这是一份面向实践者的 verl 框架使用教程。教程沿用“先跑通、再理解、再扩展”的学习路线，并将示例命令、配置键、算法目录和扩展 API 更新到 v0.8.0。
