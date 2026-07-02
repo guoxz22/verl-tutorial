@@ -1,75 +1,85 @@
 # 13-2 - 修改 Critic Worker
 
-本章介绍如何修改 Critic Worker。
+Critic 负责估计 value，并在 PPO/GAE 这类 actor-critic 算法中提供 baseline。GRPO、RLOO、ReMax 等 critic-free 方法通常不需要改 Critic。
 
-## Critic Worker 基础
+## v0.8.0 中 Critic 在哪里
 
-Critic Worker 负责：
-- 加载和管理 Critic 模型
-- 估计 Value Function
-- 计算 Value Loss
-- 更新 Critic 参数
+| 文件 | 作用 |
+| --- | --- |
+| `verl/trainer/ppo/ray_trainer.py` | 调用 `_compute_values`、`_update_critic` |
+| `verl/trainer/main_ppo.py` | role 到 `TrainingWorker` 的映射 |
+| `verl/workers/engine_workers.py` | 统一 worker 路径 |
+| `verl/workers/config/critic.py` | critic 配置 dataclass |
+| `verl/workers/utils/losses.py` | `value_loss` 实现 |
 
-## 修改示例：自定义 Value Loss
+旧版教程里的 `from verl.workers.fsdp_workers import CriticWorker` 不适用于 v0.8.0。
 
-```python
-# custom_critic_worker.py
-from verl.workers.fsdp_workers import CriticWorker
+## 先通过配置调 Critic
 
-class CustomCriticWorker(CriticWorker):
-    """带自定义 Value Loss 的 Critic Worker"""
-
-    def compute_value_loss(self, values, returns, mask):
-        """自定义 Value Loss 计算"""
-        # 标准 MSE Loss
-        mse_loss = ((values - returns) ** 2) * mask
-
-        # 添加 Huber Loss 选项
-        if hasattr(self.config, 'use_huber_loss') and self.config.use_huber_loss:
-            delta = self.config.huber_delta
-            error = values - returns
-            huber_loss = torch.where(
-                error.abs() < delta,
-                0.5 * error ** 2,
-                delta * (error.abs() - 0.5 * delta)
-            )
-            loss = (huber_loss * mask).sum() / mask.sum()
-        else:
-            loss = mse_loss.sum() / mask.sum()
-
-        return loss
+```bash
+critic.optim.lr=1e-5 \
+critic.ppo_micro_batch_size_per_gpu=4 \
+critic.ppo_max_token_len_per_gpu=32768 \
+critic.fsdp.param_offload=False \
+critic.fsdp.optimizer_offload=False
 ```
 
-## 修改示例：Value Function 正则化
+PPO 中也要设置 warmup：
 
-```python
-class CustomCriticWorker(CriticWorker):
-    """带正则化的 Critic Worker"""
-
-    def update_critic(self, data):
-        metrics = super().update_critic(data)
-
-        # 添加 Value 范数约束
-        if hasattr(self.config, 'value_norm_reg'):
-            values = data.batch['values']
-            value_std = values.std()
-
-            if value_std > self.config.value_norm_threshold:
-                reg_loss = self.config.value_norm_reg * (value_std - 1.0) ** 2
-                reg_loss.backward()
-                metrics['critic/value_norm_reg'] = reg_loss.item()
-
-        return metrics
+```bash
+trainer.critic_warmup=10
 ```
 
-## 不使用 Critic
-
-对于 GRPO 等算法，可以禁用 Critic：
+GRPO/RLOO/ReMax 通常不训练 critic：
 
 ```bash
 trainer.critic_warmup=0
 ```
 
+## 想改 Value Loss 怎么办
+
+优先阅读 `verl/workers/utils/losses.py` 中的 `value_loss`。如果只是增加一种 value clipping、Huber loss 或额外 metrics，建议：
+
+1. 先在本地 fork 中改 `value_loss`。
+2. 保持输入输出字段不变。
+3. 输出新的 `critic/*` metrics。
+4. 只跑 PPO 小模型 smoke test。
+
+伪代码：
+
+```python
+def my_value_loss(config, model_output, data, dp_group=None):
+    # 参考官方 value_loss 的 mask、clip、聚合方式
+    values = model_output["values"]
+    returns = data["returns"]
+    response_mask = data["response_mask"]
+    ...
+```
+
+## 什么时候不需要 Critic
+
+| 算法 | 是否需要 Critic |
+| --- | --- |
+| PPO / GAE | 通常需要 |
+| GRPO | 不需要 |
+| RLOO | 不需要 |
+| ReMax | 不需要 |
+| REINFORCE++ | 不需要 |
+| GPG | 不需要 |
+
+## 风险提示
+
+Critic 改动容易影响：
+
+- value/returns shape；
+- mask 聚合；
+- actor advantage 的尺度；
+- checkpoint 中 critic 状态；
+- 多机训练时的 DP 聚合。
+
+因此，除非论文明确需要新的 value objective，否则优先把研究点放在 advantage 或 policy loss。
+
 ## 下一步
 
-- [13-3-rollout-worker.md](13-3-rollout-worker.md) - 修改 Rollout Worker
+- [13-3-rollout-worker.md](13-3-rollout-worker.md)
+- [12-1-advantage.md](../12-custom-algorithm/12-1-advantage.md)

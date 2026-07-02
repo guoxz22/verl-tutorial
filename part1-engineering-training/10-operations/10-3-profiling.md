@@ -1,4 +1,4 @@
-# 10-3 - 性能分析与调优
+﻿# 10-3 - 性能分析与调优
 
 本章介绍如何分析和优化 verl 训练性能。
 
@@ -77,7 +77,7 @@ actor_rollout_ref.model.use_remove_padding=True
 
 ```bash
 # 序列并行
-actor_rollout_ref.actor.ulysses_sequence_parallel_size=2
+actor_rollout_ref.actor.fsdp_config.ulysses_sequence_parallel_size=2
 
 # Tensor Parallel
 actor_rollout_ref.rollout.tensor_model_parallel_size=4

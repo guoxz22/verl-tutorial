@@ -1,178 +1,102 @@
 # 12-2 - 自定义 Policy Loss
 
-本章介绍如何实现自定义 Policy Loss。
+Policy loss 决定 actor 如何根据 log probability、advantage 和 mask 更新。v0.8.0 的注册入口是 `register_policy_loss`，配置键是：
 
-## Policy Loss 基础
-
-Policy Loss 决定了如何根据 Advantage 更新策略：
-
-```
-Loss = -E[A(s,a) * log π(a|s)]
+```bash
+actor_rollout_ref.actor.policy_loss.loss_mode=<name>
 ```
 
-verl 内置了多种 Policy Loss：
-
-- 标准 PPO Clip Loss
-- KL 惩罚 Loss（GRPO 使用）
-- 熵正则化 Loss
-
-## 实现自定义 Policy Loss
-
-### 基本模板
+## 官方函数签名
 
 ```python
-# custom_policy_loss.py
+PolicyLossFn = Callable[
+    [old_log_prob, log_prob, advantages, response_mask, loss_agg_mode, config, rollout_log_probs],
+    tuple[torch.Tensor, dict[str, Any]],
+]
+```
+
+最小模板：
+
+```python
+# my_policy_loss.py
 import torch
 from verl.trainer.ppo.core_algos import register_policy_loss
+from verl.utils.torch_functional import masked_mean
 
-@register_policy_loss("my_custom_loss")
-def my_custom_policy_loss(
+@register_policy_loss("my_loss")
+def compute_my_loss(
     old_log_prob: torch.Tensor,
     log_prob: torch.Tensor,
     advantages: torch.Tensor,
     response_mask: torch.Tensor,
-    loss_agg_mode: str,
-    config,
-    rollout_log_probs=None,
-) -> torch.Tensor:
-    """
-    自定义 Policy Loss
-
-    Args:
-        old_log_prob: 旧策略 log prob [batch_size, seq_len]
-        log_prob: 当前策略 log prob [batch_size, seq_len]
-        advantages: Advantage 值 [batch_size, seq_len]
-        response_mask: Response 掩码 [batch_size, seq_len]
-        loss_agg_mode: 聚合模式 ('token-mean', 'seq-mean', etc.)
-        config: ActorConfig 配置
-        rollout_log_probs: 可选的 rollout log probs
-
-    Returns:
-        loss: torch.Tensor 标量
-    """
-    # 计算 importance ratio
-    ratio = torch.exp(log_prob - old_log_prob)
-
-    # 自定义 loss 计算
-    # 示例：简单的 policy gradient
-    loss = -ratio * advantages
-
-    # 应用掩码并聚合
-    if loss_agg_mode == 'token-mean':
-        loss = (loss * response_mask).sum() / response_mask.sum()
-    elif loss_agg_mode == 'seq-mean':
-        seq_loss = (loss * response_mask).sum(dim=-1) / response_mask.sum(dim=-1)
-        loss = seq_loss.mean()
-    else:
-        loss = loss.mean()
-
-    return loss
-```
-
-### PPO Clip Loss 实现（参考）
-
-```python
-@register_policy_loss("ppo_clip")
-def ppo_clip_loss(
-    old_log_prob, log_prob, advantages, response_mask,
-    loss_agg_mode, config, rollout_log_probs=None
+    loss_agg_mode: str = "token-mean",
+    config=None,
+    rollout_log_probs: torch.Tensor | None = None,
 ):
-    """PPO Clip Loss"""
     ratio = torch.exp(log_prob - old_log_prob)
-
-    # PPO clipping
-    clip_ratio = config.clip_ratio
-    clipped_ratio = torch.clamp(ratio, 1 - clip_ratio, 1 + clip_ratio)
-
-    # 取较小值
-    surr1 = ratio * advantages
-    surr2 = clipped_ratio * advantages
-    loss = -torch.min(surr1, surr2)
-
-    # 聚合
-    if loss_agg_mode == 'token-mean':
-        loss = (loss * response_mask).sum() / response_mask.sum()
-    else:
-        loss = (loss * response_mask).sum(dim=-1) / response_mask.sum(dim=-1)
-        loss = loss.mean()
-
-    return loss
+    loss_mat = -ratio * advantages
+    loss = masked_mean(loss_mat, response_mask)
+    metrics = {
+        "actor/my_pg_loss": loss.detach().item(),
+        "actor/my_ratio_mean": masked_mean(ratio, response_mask).detach().item(),
+    }
+    return loss, metrics
 ```
 
-### KL 惩罚 Loss（参考）
+> 如果你需要在独立文件中注册 loss，确保训练进程会 import 这个文件。最常见做法是在自定义 package 的 `__init__.py` 中 import，或在启动脚本中通过你自己的入口先 import 再调用 verl trainer。
 
-```python
-@register_policy_loss("kl_loss")
-def kl_penalty_loss(
-    old_log_prob, log_prob, advantages, response_mask,
-    loss_agg_mode, config, rollout_log_probs=None
-):
-    """带 KL 惩罚的 Loss"""
-    # 标准 policy loss
-    ratio = torch.exp(log_prob - old_log_prob)
-    policy_loss = -ratio * advantages
-
-    # KL 散度
-    # 需要 reference policy 的 log prob
-    ref_log_prob = rollout_log_probs  # 假设传入
-    kl = old_log_prob - ref_log_prob  # 近似 KL
-
-    if config.kl_loss_type == 'low_var_kl':
-        kl = (torch.exp(kl) - 1 - kl)  # 低方差 KL
-
-    # 组合 loss
-    kl_coef = config.kl_loss_coef
-    total_loss = policy_loss + kl_coef * kl
-
-    # 聚合
-    if loss_agg_mode == 'token-mean':
-        total_loss = (total_loss * response_mask).sum() / response_mask.sum()
-    else:
-        total_loss = (total_loss * response_mask).sum(dim=-1) / response_mask.sum(dim=-1)
-        total_loss = total_loss.mean()
-
-    return total_loss
-```
-
-## 配置使用
+## 使用配置
 
 ```bash
 python -m verl.trainer.main_ppo \
-    actor_rollout_ref.actor.loss_type=my_custom_loss \
-    actor_rollout_ref.actor.loss_agg_mode=token-mean \
-    ...
+  algorithm.adv_estimator=grpo \
+  actor_rollout_ref.actor.policy_loss.loss_mode=my_loss
 ```
 
-## 添加配置参数
-
-如果需要新的配置参数：
-
-1. 在 `verl/workers/config.py` 的 `ActorConfig` 中添加：
-
-```python
-@dataclass
-class ActorConfig:
-    # 现有参数...
-
-    # 自定义参数
-    my_custom_param: float = 0.1
-```
-
-2. 在 loss 函数中使用：
-
-```python
-@register_policy_loss("my_custom_loss")
-def my_custom_loss(..., config, ...):
-    my_param = config.my_custom_param
-    # 使用 my_param
-```
-
-3. 配置：
+新增自定义超参数要加 `+`：
 
 ```bash
-actor_rollout_ref.actor.my_custom_param=0.5
++actor_rollout_ref.actor.policy_loss.my_clip=0.3
 ```
 
-## 下一步
+在函数里可以通过 `config.policy_loss.my_clip` 读取。
 
-- [12-3-reward-manager.md](12-3-reward-manager.md) - 自定义 Reward Manager
+## 官方已注册 loss
+
+```text
+vanilla, dppo_tv, dppo_kl, gspo, sapo, gpg,
+clip_cov, kl_cov, geo_mean, cispo, bypass_mode
+```
+
+其中：
+
+- `vanilla` 是默认 PPO clipped surrogate。
+- `gspo`、`sapo`、`cispo` 是 policy loss 变体，不是 advantage estimator。
+- `geo_mean` 对应 GMPO。
+- `dppo_tv` / `dppo_kl` 对应 DPPO 变体。
+
+## 不要用的旧键
+
+```bash
+# 错误 / 旧写法
+actor_rollout_ref.actor.loss_type=my_loss
+
+# v0.8.0 写法
+actor_rollout_ref.actor.policy_loss.loss_mode=my_loss
+```
+
+## 验证你的 loss 是否生效
+
+1. 在 metrics 里输出唯一前缀，例如 `actor/my_pg_loss`。
+2. 训练 1 step，检查 console 或 wandb 中是否出现该指标。
+3. 临时设置一个明显不同的 loss，确认曲线变化。
+4. 再和 `vanilla` 对照，避免只注册未调用。
+
+## 常见错误
+
+| 错误 | 原因 | 解决 |
+| --- | --- | --- |
+| `Unknown policy loss` | 自定义模块没有被 import | 确保注册代码在 trainer 启动前执行 |
+| `Key policy_loss.my_x is not in struct` | 新增 Hydra 键没加 `+` | 用 `+actor_rollout_ref.actor.policy_loss.my_x=...` |
+| loss 是 NaN | ratio 爆炸或 mask 错 | clamp ratio，检查 `response_mask` |
+| 指标没有出现 | 返回 metrics key 不对或 loss 未调用 | 加唯一 metrics 前缀 |

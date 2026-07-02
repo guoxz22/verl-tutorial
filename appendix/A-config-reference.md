@@ -1,97 +1,162 @@
 # A - 配置参数参考
 
-本章提供 verl 配置参数的快速参考。
+本附录按 v0.8.0 的 `verl/trainer/config/_generated_ppo_trainer.yaml`、`rollout/rollout.yaml`、`reward/reward.yaml` 和 `sft_trainer_engine.yaml` 整理。它不是完整复制配置文件，而是列出最常改、最容易写错的键。
 
-## Algorithm 配置
+## 版本基准
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `algorithm.adv_estimator` | str | `gae` | Advantage 估计器：gae, grpo, reinforce_plus_plus, rloo |
-| `algorithm.gamma` | float | 1.0 | 折扣因子 |
-| `algorithm.lam` | float | 1.0 | GAE lambda |
-| `algorithm.use_kl_in_reward` | bool | False | 是否在奖励中加入 KL 惩罚 |
-| `algorithm.kl_penalty` | str | `kl` | KL 惩罚类型：kl, abs, mse, low_var_kl |
-| `algorithm.kl_ctrl.type` | str | `fixed` | KL 控制器：fixed, adaptive |
-| `algorithm.kl_ctrl.kl_coef` | float | 0.001 | KL 惩罚系数 |
-| `algorithm.kl_ctrl.target_kl` | float | 0.1 | 目标 KL（adaptive 模式） |
+| 项目 | 值 |
+| --- | --- |
+| verl release | `v0.8.0` |
+| RL 入口 | `python -m verl.trainer.main_ppo` |
+| SFT 入口 | `torchrun ... -m verl.trainer.sft_trainer` |
+| PPO 生成配置 | `verl/trainer/config/_generated_ppo_trainer.yaml` |
+| SFT 配置 | `verl/trainer/config/sft_trainer_engine.yaml` |
 
-## Data 配置
+## Algorithm
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `data.train_files` | str | - | 训练数据路径 |
-| `data.val_files` | str | - | 验证数据路径 |
-| `data.train_batch_size` | int | 1024 | 训练批次大小 |
-| `data.max_prompt_length` | int | 512 | 最大 prompt 长度 |
-| `data.max_response_length` | int | 512 | 最大 response 长度 |
-| `data.shuffle` | bool | True | 是否打乱数据 |
-| `data.filter_overlong_prompts` | bool | False | 过滤超长 prompt |
-| `data.truncation` | str | `error` | 截断策略：error, left, right, middle |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `algorithm.adv_estimator` | `gae` | `gae`、`grpo`、`rloo`、`remax`、`gpg`、`gdpo`、`optimal_token_baseline` 等 |
+| `algorithm.gamma` | `1.0` | 折扣因子 |
+| `algorithm.lam` | `1.0` | GAE lambda |
+| `algorithm.use_kl_in_reward` | `False` | 是否把 KL 惩罚加到 reward 中 |
+| `algorithm.kl_penalty` | `kl` | `kl`、`abs`、`mse`、`low_var_kl`、`full` |
+| `algorithm.kl_ctrl.type` | `fixed` | `fixed` 或 `adaptive` |
+| `algorithm.kl_ctrl.kl_coef` | `0.001` | KL 系数 |
+| `algorithm.use_pf_ppo` | `False` | Preference Feedback PPO 开关 |
 
-## Actor 配置
+## Data
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `actor_rollout_ref.model.path` | str | - | 模型路径 |
-| `actor_rollout_ref.actor.strategy` | str | `fsdp` | 训练策略：fsdp, fsdp2, megatron |
-| `actor_rollout_ref.actor.optim.lr` | float | 1e-6 | 学习率 |
-| `actor_rollout_ref.actor.ppo_mini_batch_size` | int | 256 | PPO mini batch 大小 |
-| `actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu` | int | 8 | 每 GPU micro batch 大小 |
-| `actor_rollout_ref.actor.use_kl_loss` | bool | False | 是否使用 KL Loss |
-| `actor_rollout_ref.actor.kl_loss_coef` | float | 0.001 | KL Loss 系数 |
-| `actor_rollout_ref.actor.clip_ratio` | float | 0.2 | PPO clip 比率 |
-| `actor_rollout_ref.actor.entropy_coeff` | float | 0.0 | 熵系数 |
-| `actor_rollout_ref.model.enable_gradient_checkpointing` | bool | False | 梯度检查点 |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `data.train_files` | `~/data/rlhf/gsm8k/train.parquet` | 训练 parquet |
+| `data.val_files` | `~/data/rlhf/gsm8k/test.parquet` | 验证 parquet |
+| `data.prompt_key` | `prompt` | prompt 字段 |
+| `data.reward_fn_key` | `data_source` | reward function 的 data_source 字段 |
+| `data.train_batch_size` | `1024` | 每 step prompt 数 |
+| `data.max_prompt_length` | `512` | prompt 最大 token |
+| `data.max_response_length` | `512` | response 最大 token |
+| `data.filter_overlong_prompts` | `False` | 是否过滤超长 prompt |
+| `data.truncation` | `error` | 超长处理策略 |
+| `data.return_raw_chat` | `True` | Agent/multi-turn 常需要保留 raw messages |
+| `data.image_key` / `video_key` / `audio_key` | `images` / `videos` / `audios` | 多模态字段 |
 
-## Rollout 配置
+## Actor / Model
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `actor_rollout_ref.rollout.name` | str | `vllm` | 推理引擎：vllm, sglang, hf |
-| `actor_rollout_ref.rollout.tensor_model_parallel_size` | int | 1 | Tensor Parallel 大小 |
-| `actor_rollout_ref.rollout.gpu_memory_utilization` | float | 0.5 | GPU 内存利用率 |
-| `actor_rollout_ref.rollout.n` | int | 1 | 每个 prompt 采样数 |
-| `actor_rollout_ref.rollout.temperature` | float | 1.0 | 采样温度 |
-| `actor_rollout_ref.rollout.top_p` | float | 1.0 | Top-p 采样 |
-| `actor_rollout_ref.rollout.max_num_batched_tokens` | int | 8192 | 最大批处理 tokens |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `actor_rollout_ref.model.path` | 必填 | actor/ref/rollout 使用的 HF 模型路径 |
+| `actor_rollout_ref.model.use_remove_padding` | `False` | 去 padding 优化 |
+| `actor_rollout_ref.model.enable_gradient_checkpointing` | `False` | 梯度检查点 |
+| `actor_rollout_ref.model.lora_rank` | `0` | LoRA rank，0 表示不启用 |
+| `actor_rollout_ref.model.mtp.enable` | `False` | MTP 模块开关 |
+| `actor_rollout_ref.actor.strategy` | `fsdp` | FSDP/FSDP2 路径常用；Megatron 等通过 `model_engine` |
+| `actor_rollout_ref.actor.optim.lr` | `1e-6` | actor 学习率 |
+| `actor_rollout_ref.actor.ppo_mini_batch_size` | `256` | actor mini batch |
+| `actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu` | `null` | 每 GPU micro batch，优先使用 `_per_gpu` |
+| `actor_rollout_ref.actor.ppo_max_token_len_per_gpu` | `16384` | 动态 batch token 上限 |
+| `actor_rollout_ref.actor.policy_loss.loss_mode` | `vanilla` | `vanilla`、`gspo`、`sapo`、`gpg`、`geo_mean`、`cispo` 等 |
+| `actor_rollout_ref.actor.use_kl_loss` | `False` | actor loss 侧 KL |
+| `actor_rollout_ref.actor.kl_loss_type` | `low_var_kl` | loss 侧 KL 类型 |
+| `actor_rollout_ref.actor.fsdp_config.param_offload` | `False` | FSDP 参数 offload |
+| `actor_rollout_ref.actor.fsdp_config.optimizer_offload` | `False` | FSDP optimizer offload |
 
-## Critic 配置
+## Rollout
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `critic.strategy` | str | `fsdp` | 训练策略 |
-| `critic.optim.lr` | float | 1e-5 | 学习率 |
-| `critic.ppo_micro_batch_size_per_gpu` | int | 8 | Micro batch 大小 |
-| `critic.model.enable_gradient_checkpointing` | bool | False | 梯度检查点 |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `actor_rollout_ref.rollout.name` | 必填 | `hf`、`vllm`、`sglang`、`trtllm` |
+| `actor_rollout_ref.rollout.mode` | `async` | 默认 async |
+| `actor_rollout_ref.rollout.tensor_model_parallel_size` | `2` | rollout TP |
+| `actor_rollout_ref.rollout.gpu_memory_utilization` | `0.5` | 推理后端显存比例 |
+| `actor_rollout_ref.rollout.n` | `1` | 每个 prompt 采样数 |
+| `actor_rollout_ref.rollout.temperature` | `1.0` | 采样温度 |
+| `actor_rollout_ref.rollout.top_p` | `1.0` | top-p |
+| `actor_rollout_ref.rollout.max_num_batched_tokens` | `8192` | rollout batching token 上限 |
+| `actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu` | `null` | rollout logprob micro batch |
+| `actor_rollout_ref.rollout.engine_kwargs.vllm` | `{}` | vLLM 专属参数，新增键要加 `+` |
+| `actor_rollout_ref.rollout.engine_kwargs.sglang` | `{}` | SGLang 专属参数 |
+| `actor_rollout_ref.rollout.engine_kwargs.trtllm` | `{}` | TRTLLM 专属参数 |
 
-## Trainer 配置
+## Multi-turn / Agent
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `trainer.n_gpus_per_node` | int | 8 | 每节点 GPU 数 |
-| `trainer.nnodes` | int | 1 | 节点数 |
-| `trainer.total_epochs` | int | 30 | 总 epoch 数 |
-| `trainer.total_training_steps` | int | null | 总步数（优先于 epochs） |
-| `trainer.critic_warmup` | int | 0 | Critic 预热步数 |
-| `trainer.save_freq` | int | -1 | 保存频率 |
-| `trainer.test_freq` | int | -1 | 验证频率 |
-| `trainer.logger` | list | `["console","wandb"]` | 日志后端 |
-| `trainer.project_name` | str | `verl_examples` | 项目名 |
-| `trainer.experiment_name` | str | `gsm8k` | 实验名 |
-| `trainer.resume_mode` | str | `auto` | 恢复模式：auto, disable, resume_path |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `actor_rollout_ref.rollout.multi_turn.enable` | `False` | 多轮开关 |
+| `actor_rollout_ref.rollout.multi_turn.tool_config_path` | `null` | BaseTool YAML |
+| `actor_rollout_ref.rollout.multi_turn.function_tool_path` | `null` | `@function_tool` Python 文件 |
+| `actor_rollout_ref.rollout.multi_turn.max_user_turns` | `null` | 用户/环境轮数上限 |
+| `actor_rollout_ref.rollout.multi_turn.max_assistant_turns` | `null` | assistant 轮数上限 |
+| `actor_rollout_ref.rollout.multi_turn.format` | `hermes` | 工具调用格式 |
+| `actor_rollout_ref.rollout.multi_turn.tokenization_sanity_check_mode` | `strict` | 多轮 tokenization 检查 |
+| `actor_rollout_ref.rollout.agent.default_agent_loop` | `single_turn_agent` | 默认 AgentLoop |
+| `actor_rollout_ref.rollout.agent.agent_loop_config_path` | `null` | AgentLoop 配置文件 |
 
-## Reward 配置
+## Critic
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `reward.reward_model.enable` | bool | False | 启用 Reward Model |
-| `reward.reward_model.model_path` | str | - | Reward Model 路径 |
-| `reward.num_workers` | int | 1 | 奖励计算并行度 |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `critic.enable` | `null` | 是否启用 critic；PPO 需要，GRPO 通常不需要 |
+| `critic.model.path` | 继承/必填 | critic 模型路径 |
+| `critic.optim.lr` | `1e-5` | critic 学习率 |
+| `critic.ppo_micro_batch_size_per_gpu` | `null` | critic micro batch |
+| `critic.ppo_max_token_len_per_gpu` | `32768` | critic 动态 batch token 上限 |
+| `critic.fsdp.param_offload` | `False` | critic 参数 offload |
 
-## FSDP 配置
+## Reward
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `actor_rollout_ref.actor.fsdp_config.param_offload` | bool | False | 参数 Offload |
-| `actor_rollout_ref.actor.fsdp_config.optimizer_offload` | bool | False | 优化器 Offload |
-| `actor_rollout_ref.actor.fsdp_config.fsdp_size` | int | -1 | FSDP 分片大小 |
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `reward.num_workers` | `8` | reward manager 并行 worker 数 |
+| `reward.custom_reward_function.path` | `null` | 自定义 reward 文件 |
+| `reward.custom_reward_function.name` | `compute_score` | reward 函数名 |
+| `reward.reward_manager.source` | `register` | manager 来源 |
+| `reward.reward_manager.name` | `naive` | manager 名称 |
+| `reward.reward_manager.module.path` | `null` | 自定义 manager 模块路径 |
+| `reward.reward_model.enable` | `False` | 是否启用 Reward Model |
+| `reward.reward_model.model_path` | `null` | Reward Model 路径 |
+| `reward.reward_model.rollout.name` | 必填（启用 RM 时） | RM 推理后端 |
+| `reward.reward_model.enable_resource_pool` | `False` | RM 是否单独资源池 |
+| `reward.sandbox_fusion.url` | `null` | Sandbox Fusion 地址 |
+
+## Trainer
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `trainer.nnodes` | `1` | 节点数 |
+| `trainer.n_gpus_per_node` | `8` | 每节点 GPU 数 |
+| `trainer.total_epochs` | `30` | 总 epoch |
+| `trainer.total_training_steps` | `null` | 指定后优先于 epochs |
+| `trainer.logger` | `['console','wandb']` | 日志后端 |
+| `trainer.project_name` | `verl_examples` | 项目名 |
+| `trainer.experiment_name` | `gsm8k` | 实验名 |
+| `trainer.save_freq` | `-1` | 保存频率 |
+| `trainer.test_freq` | `-1` | 验证频率 |
+| `trainer.resume_mode` | `auto` | `auto`、`disable`、`resume_path` |
+| `trainer.resume_from_path` | `null` | resume 路径 |
+| `trainer.val_before_train` | `True` | 训练前验证 |
+
+## SFT
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `data.micro_batch_size_per_gpu` | `4` | SFT 每 GPU micro batch |
+| `data.messages_key` | `messages` | SFT messages 字段 |
+| `data.max_length` | `1024` | SFT 总长度 |
+| `engine` | `fsdp` | SFT engine |
+| `engine.ulysses_sequence_parallel_size` | 视 engine 配置 | Ulysses 序列并行 |
+| `model.path` | 必填 | SFT 模型路径 |
+| `optim.lr` | 视配置 | SFT 学习率 |
+
+## 迁移速查
+
+| 旧写法 | v0.8.0 推荐写法 |
+| --- | --- |
+| `reward.reward_function.path` | `reward.custom_reward_function.path` |
+| `reward.reward_function.name` | `reward.custom_reward_function.name` |
+| `reward.reward_model.path` | `reward.reward_model.model_path` |
+| `reward.reward_manager=my_rm` | `reward.reward_manager.name=my_rm` |
+| `actor_rollout_ref.actor.loss_type` | `actor_rollout_ref.actor.policy_loss.loss_mode` |
+| `data.micro_batch_size` in SFT | `data.micro_batch_size_per_gpu` |
+| `actor_rollout_ref.rollout.multi_turn.tool.dict.*` | `tool_config_path` 或 `function_tool_path` |
+| `data.tool_provider` | `agent.default_agent_loop` 或数据字段 `agent_name` |

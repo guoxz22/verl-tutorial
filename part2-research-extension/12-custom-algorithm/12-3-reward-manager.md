@@ -1,207 +1,105 @@
 # 12-3 - 自定义 Reward Manager
 
-本章介绍如何实现自定义 Reward Manager。
-
-## Reward Manager 基础
-
-Reward Manager 负责计算每个 Response 的奖励值。verl 提供了抽象基类：
+Reward Manager 控制“如何把一批 rollout 样本变成 reward tensor”。v0.8.0 的注册器是：
 
 ```python
-from verl.workers.reward_manager import AbstractRewardManager
+from verl.workers.reward_manager import register
 ```
 
-## 实现自定义 Reward Manager
+不是旧教程里的 `register_reward_manager`。
 
-### 基本模板
+## 官方抽象类签名
+
+```python
+class AbstractRewardManager:
+    def __init__(self, tokenizer, num_examine, compute_score, reward_fn_key="data_source", **kwargs): ...
+    def __call__(self, data, return_dict=False): ...
+```
+
+`__call__` 应返回：
+
+- `torch.Tensor`：形状通常与 `data.batch["responses"]` 一致，只在需要给 reward 的 token 位置非零。
+- 或 `dict`：包含 `reward_tensor` 和 `reward_extra_info`。
+
+## 最小模板
 
 ```python
 # custom_reward_manager.py
+from collections import defaultdict
+from typing import Any
+
 import torch
-from verl.workers.reward_manager import AbstractRewardManager, register_reward_manager
 from verl import DataProto
+from verl.workers.reward_manager import register
+from verl.workers.reward_manager.abstract import AbstractRewardManager
 
-@register_reward_manager("my_custom_rm")
+@register("my_custom_rm")
 class MyCustomRewardManager(AbstractRewardManager):
-    """
-    自定义 Reward Manager
-    """
+    def __init__(self, tokenizer, num_examine, compute_score=None, reward_fn_key="data_source", **kwargs):
+        self.tokenizer = tokenizer
+        self.num_examine = num_examine
+        self.compute_score = compute_score
+        self.reward_fn_key = reward_fn_key
 
-    def __init__(self, config):
-        super().__init__(config)
-        self.config = config
+    def __call__(self, data: DataProto, return_dict: bool = False) -> torch.Tensor | dict[str, Any]:
+        reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
+        reward_extra_info = defaultdict(list)
 
-    def __call__(self, data: DataProto) -> DataProto:
-        """
-        计算奖励
+        for i in range(len(data)):
+            item = data[i]
+            response_ids = item.batch["responses"]
+            attention_mask = item.batch["attention_mask"]
+            prompt_len = item.batch["prompts"].shape[-1]
+            valid_response_len = attention_mask[prompt_len:].sum()
+            valid_response_ids = response_ids[:valid_response_len]
+            response_str = self.tokenizer.decode(valid_response_ids, skip_special_tokens=True)
 
-        Args:
-            data: DataProto 对象，包含：
-                - data.batch['input_ids']: 输入 token IDs
-                - data.batch['attention_mask']: 注意力掩码
-                - data.non_tensor_batch['data_source']: 原始 prompt
-                - 其他自定义字段
+            ground_truth = item.non_tensor_batch["reward_model"]["ground_truth"]
+            score = 1.0 if str(ground_truth) in response_str else 0.0
+            reward_tensor[i, valid_response_len - 1] = score
+            reward_extra_info["exact_match"].append(score)
 
-        Returns:
-            data: 更新后的 DataProto，包含：
-                - data.batch['rewards']: 奖励张量
-        """
-        # 获取原始 prompt 和生成的 response
-        prompts = data.non_tensor_batch.get('data_source', [])
-        input_ids = data.batch['input_ids']
-
-        # 解码 response
-        responses = self._decode_responses(input_ids, self.tokenizer)
-
-        # 计算奖励
-        rewards = []
-        for prompt, response in zip(prompts, responses):
-            reward = self._compute_single_reward(prompt, response)
-            rewards.append(reward)
-
-        # 存储奖励
-        data.batch['rewards'] = torch.tensor(rewards, dtype=torch.float32)
-
-        return data
-
-    def _compute_single_reward(self, prompt: str, response: str) -> float:
-        """
-        计算单个样本的奖励
-
-        Args:
-            prompt: 输入提示词
-            response: 模型生成的回答
-
-        Returns:
-            float: 奖励值
-        """
-        # 自定义奖励计算逻辑
-        # 示例：简单的长度奖励
-        reward = len(response) / 100.0
-        return reward
-
-    def _decode_responses(self, input_ids, tokenizer):
-        """解码 response"""
-        responses = []
-        for ids in input_ids:
-            text = tokenizer.decode(ids, skip_special_tokens=True)
-            responses.append(text)
-        return responses
-```
-
-### 数学验证奖励（示例）
-
-```python
-@register_reward_manager("math_reward")
-class MathRewardManager(AbstractRewardManager):
-    """数学答案验证奖励"""
-
-    def __init__(self, config):
-        super().__init__(config)
-        # 可以加载额外的验证工具
-        pass
-
-    def __call__(self, data: DataProto) -> DataProto:
-        prompts = data.non_tensor_batch.get('data_source', [])
-        ground_truths = data.non_tensor_batch.get('ground_truth', [])
-
-        input_ids = data.batch['input_ids']
-        responses = self._decode(input_ids)
-
-        rewards = []
-        for prompt, response, gt in zip(prompts, responses, ground_truths):
-            # 提取答案
-            predicted = self._extract_answer(response)
-            expected = self._parse_ground_truth(gt)
-
-            # 验证
-            if self._verify_answer(predicted, expected):
-                rewards.append(1.0)
-            else:
-                rewards.append(0.0)
-
-        data.batch['rewards'] = torch.tensor(rewards, dtype=torch.float32)
-        return data
-
-    def _extract_answer(self, text: str) -> str:
-        """从文本中提取答案"""
-        import re
-        # 匹配 #### 后的答案
-        match = re.search(r'####\s*(-?[\d,]+\.?\d*)', text)
-        if match:
-            return match.group(1).replace(',', '')
-        return None
-
-    def _parse_ground_truth(self, gt: str) -> str:
-        """解析标准答案"""
-        return gt.strip()
-
-    def _verify_answer(self, predicted, expected) -> bool:
-        """验证答案是否正确"""
-        if predicted is None or expected is None:
-            return False
-        try:
-            p = float(predicted)
-            e = float(expected)
-            return abs(p - e) < 1e-6
-        except:
-            return predicted.strip() == expected.strip()
-```
-
-### 代码执行奖励（示例）
-
-```python
-@register_reward_manager("code_reward")
-class CodeRewardManager(AbstractRewardManager):
-    """代码执行验证奖励"""
-
-    def __init__(self, config):
-        super().__init__(config)
-        self.timeout = config.get('timeout', 10)
-
-    def __call__(self, data: DataProto) -> DataProto:
-        prompts = data.non_tensor_batch.get('data_source', [])
-        input_ids = data.batch['input_ids']
-        responses = self._decode(input_ids)
-
-        rewards = []
-        for prompt, response in zip(prompts, responses):
-            code = self._extract_code(response)
-            if code:
-                reward = self._execute_code(code)
-            else:
-                reward = 0.0
-            rewards.append(reward)
-
-        data.batch['rewards'] = torch.tensor(rewards, dtype=torch.float32)
-        return data
-
-    def _extract_code(self, text: str) -> str:
-        """提取代码块"""
-        import re
-        match = re.search(r'```python\n(.*?)```', text, re.DOTALL)
-        if match:
-            return match.group(1)
-        return None
-
-    def _execute_code(self, code: str) -> float:
-        """执行代码并返回奖励"""
-        try:
-            # 安全执行代码
-            local_vars = {}
-            exec(code, {"__builtins__": {}}, local_vars)
-            return 1.0  # 执行成功
-        except Exception as e:
-            return 0.0  # 执行失败
+        if return_dict:
+            return {"reward_tensor": reward_tensor, "reward_extra_info": reward_extra_info}
+        return reward_tensor
 ```
 
 ## 配置使用
 
 ```bash
 python -m verl.trainer.main_ppo \
-    reward.reward_manager=my_custom_rm \
-    ...
+  reward.reward_manager.name=my_custom_rm
 ```
 
-## 下一步
+如果你的 manager 放在独立文件里，需要保证模块被 import。更稳妥的方式是做成 package，在 `__init__.py` 里 import 注册类。
 
-- [12-4-full-example.md](12-4-full-example.md) - 完整算法实现示例
+## 何时写 Reward Function，何时写 Reward Manager
+
+| 需求 | 推荐 |
+| --- | --- |
+| 每条样本独立打分 | `reward.custom_reward_function.path/name` |
+| 需要批量处理、缓存、多个 reward 维度 | 自定义 Reward Manager |
+| 要执行代码/沙箱且有并发控制 | Reward Manager + sandbox 配置 |
+| 要对接 RM 输出并二次解析 | Reward Model + custom reward function/manager |
+| 要给 reward_extra_info 做监控 | Reward Manager |
+
+## 内置 manager
+
+常见内置名：
+
+```bash
+reward.reward_manager.name=naive
+reward.reward_manager.name=dapo
+reward.reward_manager.name=prime
+```
+
+具体可看 `verl/workers/reward_manager/__init__.py` 和对应文件。
+
+## 常见错误
+
+| 错误 | 处理 |
+| --- | --- |
+| `Unknown reward manager` | 注册模块没被 import，或名字写错 |
+| reward 全 0 | 检查 `reward_model.ground_truth` 是否存在 |
+| shape 不匹配 | reward tensor 应与 `responses` 对齐 |
+| 多进程下状态丢失 | 不要依赖进程内全局变量保存跨 batch 状态 |

@@ -1,158 +1,126 @@
 # 14-2 - 案例研究
 
-本章通过实际案例展示如何复现论文。
+本章给出“如何把论文映射到 verl v0.8.0”的案例。重点不是复制某个固定脚本，而是学会找到官方入口、确认配置键、做最小复现。
 
-## 案例 1：复现 DeepSeek-R1 (GRPO)
+## 案例 1：DeepSeekMath / GRPO
 
-### 论文信息
+### 对应关系
 
-- 论文：DeepSeek-R1: Incentivizing Reasoning Capability in LLMs
-- 算法：GRPO (Group Relative Policy Optimization)
+| 论文概念 | verl 配置 |
+| --- | --- |
+| group sampling | `actor_rollout_ref.rollout.n>1` |
+| group-relative advantage | `algorithm.adv_estimator=grpo` |
+| rule-based math reward | `reward.custom_reward_function.*` 或默认 GSM8K/MATH reward |
+| critic-free | `critic.enable=False` 或使用 GRPO 示例默认路径 |
 
-### verl 对应
-
-verl 已内置 GRPO 支持，直接使用：
+### 最小命令骨架
 
 ```bash
-#!/bin/bash
-# reproduce_r1.sh
-
 python -m verl.trainer.main_ppo \
-    algorithm.adv_estimator=grpo \
-    algorithm.gamma=1.0 \
-    algorithm.lam=1.0 \
-    algorithm.norm_adv_by_std_in_grpo=True \
-    algorithm.use_kl_in_reward=False \
-    \
-    data.train_files=$HOME/data/math/train.parquet \
-    data.val_files=$HOME/data/math/test.parquet \
-    data.train_batch_size=1024 \
-    data.max_prompt_length=1024 \
-    data.max_response_length=4096 \
-    \
-    actor_rollout_ref.model.path=Qwen/Qwen2.5-32B-Instruct \
-    actor_rollout_ref.actor.optim.lr=5e-7 \
-    actor_rollout_ref.actor.ppo_mini_batch_size=256 \
-    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=16 \
-    actor_rollout_ref.actor.use_kl_loss=True \
-    actor_rollout_ref.actor.kl_loss_coef=0.001 \
-    actor_rollout_ref.actor.kl_loss_type=low_var_kl \
-    actor_rollout_ref.model.enable_gradient_checkpointing=True \
-    \
-    actor_rollout_ref.rollout.name=vllm \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=4 \
-    actor_rollout_ref.rollout.n=8 \
-    actor_rollout_ref.rollout.temperature=1.0 \
-    \
-    actor_rollout_ref.ref.fsdp_config.param_offload=True \
-    \
-    trainer.critic_warmup=0 \
-    trainer.n_gpus_per_node=8 \
-    trainer.nnodes=4 \
-    trainer.total_epochs=10 \
-    trainer.logger='["console","wandb"]' \
-    trainer.project_name='r1_reproduction' \
-    trainer.experiment_name='qwen2_5_32b_grpo'
+  algorithm.adv_estimator=grpo \
+  data.train_files=$HOME/data/gsm8k/train.parquet \
+  data.val_files=$HOME/data/gsm8k/test.parquet \
+  actor_rollout_ref.model.path=Qwen/Qwen2.5-0.5B-Instruct \
+  actor_rollout_ref.rollout.name=vllm \
+  actor_rollout_ref.rollout.n=8 \
+  actor_rollout_ref.actor.use_kl_loss=True \
+  actor_rollout_ref.actor.kl_loss_type=low_var_kl \
+  trainer.logger='["console"]'
 ```
 
-## 案例 2：复现 DAPO
+先用小模型确认 reward 和优势计算，再换大模型和官方 GRPO 脚本。
 
-### 论文信息
+## 案例 2：DAPO
 
-- 论文：DAPO: An Open-Source RL Framework for Advanced Reasoning
-- 算法：Dynamic Advantage Policy Optimization
+DAPO 更适合从官方 recipe 或 examples 入手，不建议手写全部细节。
 
-### 需要自定义
+关键点：
 
-DAPO 有一些特殊处理，需要扩展：
+```bash
+algorithm.adv_estimator=grpo \
+reward.reward_manager.name=dapo \
+actor_rollout_ref.rollout.n=<较大采样数>
+```
+
+复现时优先检查：
+
+1. 数据过滤与 prompt 模板；
+2. reward manager 是否为 `dapo`；
+3. 长度、overlong filtering、rollout.n；
+4. 是否启用动态 batch；
+5. 官方 recipe 所要求的 verl commit / tag。
+
+## 案例 3：GPG
+
+GPG 同时改 advantage 和 policy loss：
+
+```bash
+algorithm.adv_estimator=gpg \
+actor_rollout_ref.actor.policy_loss.loss_mode=gpg
+```
+
+注意 GPG 不是“Generalized Policy Gradient”，官方示例称为 Group Policy Gradient。
+
+## 案例 4：GSPO / SAPO / CISPO
+
+这些主要是 policy loss 变体：
+
+```bash
+# GSPO
+actor_rollout_ref.actor.policy_loss.loss_mode=gspo \
+actor_rollout_ref.actor.loss_agg_mode=seq-mean-token-mean
+
+# SAPO
+actor_rollout_ref.actor.policy_loss.loss_mode=sapo \
++actor_rollout_ref.actor.policy_loss.tau_pos=1.0 \
++actor_rollout_ref.actor.policy_loss.tau_neg=1.05
+
+# CISPO
+actor_rollout_ref.actor.policy_loss.loss_mode=cispo \
+actor_rollout_ref.actor.clip_ratio_low=10 \
+actor_rollout_ref.actor.clip_ratio_high=0.2
+```
+
+## 案例 5：MTP
+
+MTP 是 Multi-Token-Prediction，不是 Multi-Turn PPO。v0.8.0 的官方入口在 `examples/mtp_trainer/`，常见配置：
+
+```bash
+actor_rollout_ref.model.mtp.enable=True \
+actor_rollout_ref.model.mtp.enable_train=True \
+actor_rollout_ref.model.mtp.mtp_loss_scaling_factor=0.1 \
+actor_rollout_ref.model.mtp.detach_encoder=True
+```
+
+MTP 对模型结构和后端要求更严格，先跑官方 MiMo/Qwen/DeepSeek 系列示例，再改模型。
+
+## 案例 6：ReTool / Agentic RL
+
+v0.8.0 中不要使用旧键 `data.tool_provider`。工具和 agent 应通过：
+
+```bash
+actor_rollout_ref.rollout.multi_turn.enable=True \
+actor_rollout_ref.rollout.multi_turn.tool_config_path=/path/to/tool_config.yaml \
+actor_rollout_ref.rollout.multi_turn.function_tool_path=/path/to/tools.py \
+actor_rollout_ref.rollout.agent.default_agent_loop=tool_agent
+```
+
+数据中可以加入：
 
 ```python
-# dapo_advantage.py
-import torch
-from verl.trainer.ppo.core_algos import register_adv_est
-
-@register_adv_est("dapo_adv")
-def dapo_advantage(data, config):
-    """DAPO Advantage 计算"""
-    rewards = data.batch['rewards']
-    response_mask = data.batch['response_mask']
-
-    # DAPO 特有：动态 Advantage 缩放
-    # 根据 reward 分布调整 advantage
-    reward_mean = rewards.mean()
-    reward_std = rewards.std() + 1e-8
-
-    # 动态阈值
-    dynamic_threshold = reward_mean + config.dapo_alpha * reward_std
-
-    # 计算 advantage
-    advantages = (rewards - dynamic_threshold) / reward_std
-
-    # DAPO 特有：clip advantage
-    advantages = torch.clamp(advantages, -config.dapo_clip, config.dapo_clip)
-
-    return advantages * response_mask
+{"agent_name": "tool_agent", "extra_info": {"tools_kwargs": {...}}}
 ```
 
-```bash
-# reproduce_dapo.sh
-export VERL_USE_EXTERNAL_MODULES=./dapo_advantage.py
+## 复现检查表
 
-python -m verl.trainer.main_ppo \
-    algorithm.adv_estimator=dapo_adv \
-    algorithm.dapo_alpha=0.5 \
-    algorithm.dapo_clip=5.0 \
-    ...
-```
+| 检查项 | 问题 |
+| --- | --- |
+| 版本 | 论文 recipe 要求的是 v0.8.0、main，还是固定 commit？ |
+| 数据 | prompt 模板、过滤、ground truth 字段是否一致？ |
+| 奖励 | reward function/manager 是否真的被调用？ |
+| 算法 | 改的是 `adv_estimator` 还是 `policy_loss.loss_mode`？ |
+| 后端 | FSDP/Megatron/VeOmni 与原实验是否一致？ |
+| 采样 | `rollout.n`、温度、max length 是否一致？ |
+| 监控 | 是否记录 score、length、KL、clipfrac、entropy？ |
 
-## 案例 3：复现 ReTool
-
-### 论文信息
-
-- 论文：ReTool: Reinforcement Learning for Strategic Tool Use
-- 特点：多轮 + Tool Calling
-
-### 使用 SGLang 多轮
-
-```bash
-#!/bin/bash
-# reproduce_retool.sh
-
-python -m verl.trainer.main_ppo \
-    algorithm.adv_estimator=grpo \
-    \
-    data.train_files=$HOME/data/retool/train.parquet \
-    data.val_files=$HOME/data/retool/test.parquet \
-    data.tool_provider=retool \
-    \
-    actor_rollout_ref.model.path=Qwen/Qwen2.5-7B-Instruct \
-    actor_rollout_ref.rollout.name=sglang \
-    actor_rollout_ref.rollout.multi_turn.enable=true \
-    actor_rollout_ref.rollout.multi_turn.max_assistant_turns=10 \
-    actor_rollout_ref.rollout.multi_turn.tool.sandbox_fusion.enable=true \
-    \
-    trainer.n_gpus_per_node=8 \
-    trainer.total_epochs=15
-```
-
-## 已知复现项目
-
-| 项目 | 论文 | GitHub |
-|------|------|--------|
-| TinyZero | R1 Zero | github.com/Jiayi-Pan/TinyZero |
-| Easy-R1 | Multi-modal | github.com/hiyouga/EasyR1 |
-| Search-R1 | Search + Reasoning | github.com/PeterGriffinJin/Search-R1 |
-| RAGEN | Agent | github.com/ZihanWang314/ragen |
-
-## 复现建议
-
-1. **从小模型开始**：先用 0.5B-3B 模型验证算法
-2. **使用小数据集**：GSM8K (7K 样本) 适合快速验证
-3. **监控关键指标**：reward, kl, entropy
-4. **对比 baseline**：先跑 GRPO baseline，再比较自定义算法
-5. **保存检查点**：便于断点续训和消融实验
-
-## 下一步
-
-- [附录 A](../../appendix/A-config-reference.md) - 配置参数参考
-- [附录 B](../../appendix/B-common-errors.md) - 常见错误
+复现不要一开始追求同等规模；先做 1 step 数值链路，再做小模型趋势，最后扩大模型和数据。

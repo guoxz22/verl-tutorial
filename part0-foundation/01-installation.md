@@ -1,243 +1,113 @@
 # 01 - 安装与配置
 
+本章目标：给你一套能复现 v0.8.0 示例的安装路线，并说明什么时候该用 Docker，什么时候可以自己配环境。
+
 ## 环境要求
 
-| 依赖 | 版本要求 |
-|------|----------|
-| Python | >= 3.10 |
-| CUDA | >= 12.8 |
-| cuDNN | >= 9.10.0 |
+verl v0.8.0 官方安装文档给出的基础要求：
 
-**硬件支持**：NVIDIA GPU（推荐）、AMD GPU（ROCm）、华为 Ascend NPU
+| 项目 | 建议 |
+| --- | --- |
+| Python | `>=3.10`，官方示例常用 3.12 |
+| CUDA | `>=12.8` |
+| cuDNN | `>=9.10.0` |
+| 训练后端 | FSDP/FSDP2 入门，Megatron-LM 扩展大模型，VeOmni/TorchTitan/Automodel 属于进阶后端 |
+| Rollout 后端 | vLLM、SGLang、TGI；v0.8.0 代码中也支持 `trtllm` rollout |
 
-## 安装方式
+> 最稳妥的学习方式是先用 Docker 跑通官方 quickstart，再在自己的环境里逐步替换依赖。
 
-### 方式一：使用 Docker（推荐）
+## 方式一：Docker（推荐）
 
-Docker 是最简单的安装方式，所有依赖已预装。
-
-**1. 拉取镜像**
-
-```bash
-# vLLM 版本
-docker pull verlai/verl:vllm011.latest
-
-# SGLang 版本
-docker pull verlai/verl:sgl055.latest
-```
-
-**2. 启动容器**
+官方 Docker 镜像发布节奏比教程快，具体 tag 请以 `docker/README.md` 和 Docker Hub `verlai/verl` 为准。启动方式如下：
 
 ```bash
-# 创建容器
 docker create --runtime=nvidia --gpus all --net=host \
-    --shm-size="10g" --cap-add=SYS_ADMIN \
-    -v $(pwd):/workspace/verl \
-    --name verl verlai/verl:vllm011.latest sleep infinity
+  --shm-size="10g" --cap-add=SYS_ADMIN \
+  -v $PWD:/workspace/verl \
+  --name verl <image:tag> sleep infinity
 
-# 启动并进入
 docker start verl
 docker exec -it verl bash
 ```
 
-**3. 安装 verl**
+进入容器后安装 verl 源码：
 
 ```bash
-# 在容器内
-git clone https://github.com/volcengine/verl.git && cd verl
-pip3 install --no-deps -e .
-```
-
-### 方式二：从源码安装
-
-适用于需要自定义环境或修改 verl 源码的场景。
-
-**1. 创建 Conda 环境**
-
-```bash
-conda create -n verl python==3.12
-conda activate verl
-```
-
-**2. 安装依赖**
-
-```bash
-# 克隆仓库
-git clone https://github.com/volcengine/verl.git
+git clone https://github.com/verl-project/verl.git
 cd verl
+git checkout v0.8.0
+pip install --no-deps -e .
+```
 
-# 安装全部依赖（包含 Megatron-LM）
+如果你需要自己安装 inference 依赖：
+
+```bash
+pip install -e ".[vllm]"
+pip install -e ".[sglang]"
+pip install -e ".[trtllm]"  # 仅在准备使用 TensorRT-LLM rollout 时需要
+```
+
+## 方式二：自定义 Conda 环境
+
+适合不能使用 Docker 的机器。建议先装 inference 框架，再装 verl，避免 vLLM/SGLang 覆盖 PyTorch 版本后才发现冲突。
+
+```bash
+conda create -n verl python=3.12 -y
+conda activate verl
+
+git clone https://github.com/verl-project/verl.git
+cd verl
+git checkout v0.8.0
+
+# FSDP + vLLM/SGLang + Megatron 常用依赖脚本
 bash scripts/install_vllm_sglang_mcore.sh
 
-# 或仅安装 FSDP 依赖（更快）
+# 只跑 FSDP 可以关闭 Megatron 依赖
 USE_MEGATRON=0 bash scripts/install_vllm_sglang_mcore.sh
-```
 
-**3. 安装 verl**
-
-```bash
 pip install --no-deps -e .
 ```
 
-### 方式三：指定推理引擎安装
-
-如果需要同时支持 vLLM 和 SGLang：
+## 快速验证
 
 ```bash
-pip install -e .[vllm]
-pip install -e .[sglang]
+python - <<'PY'
+import verl
+print('verl import ok')
+PY
+
+python -m verl.trainer.main_ppo --help | head
 ```
 
-## 后端选择指南
+如果 `main_ppo --help` 能输出 Hydra 帮助信息，说明入口可用。
 
-### 训练后端
+## 模型下载建议
 
-| 后端 | 特点 | 推荐场景 |
-|------|------|----------|
-| **FSDP** | PyTorch 原生，配置简单 | 研究、原型开发、中小模型 |
-| **FSDP2** | 更高性能，支持 CPU Offload | 内存受限、需要更高吞吐 |
-| **Megatron-LM** | 大规模分布式优化 | 超大模型（70B+）、多机训练 |
-
-**启用 FSDP2**（推荐）：
+官方 quickstart 使用 `Qwen/Qwen2.5-0.5B-Instruct`。如果国内访问 Hugging Face 慢，可以设置 ModelScope：
 
 ```bash
-actor_rollout_ref.ref.strategy=fsdp2 \
-actor_rollout_ref.actor.strategy=fsdp2 \
-critic.strategy=fsdp2
+export VERL_USE_MODELSCOPE=True
 ```
 
-### 推理引擎
-
-| 引擎 | 特点 | 推荐场景 |
-|------|------|----------|
-| **vLLM** | 高吞吐，稳定 | 标准训练任务 |
-| **SGLang** | 多轮对话、Agent 支持 | AgentRL、多轮训练 |
-| **TRTLLM** | NVIDIA 优化 | 生产部署 |
-
-**vLLM 性能优化**：启用 V1 架构
+或者提前把模型下载到本地，再把路径传给：
 
 ```bash
-export VLLM_USE_V1=1
+actor_rollout_ref.model.path=/path/to/model
+critic.model.path=/path/to/model
 ```
 
-## 可选组件安装
+## 常见安装选择
 
-### Flash Attention（推荐）
-
-```bash
-pip install flash-attn --no-build-isolation
-```
-
-### NVIDIA Apex（Megatron-LM 需要）
-
-```bash
-git clone https://github.com/NVIDIA/apex.git
-cd apex
-MAX_JOBS=32 pip install -v --disable-pip-version-check --no-cache-dir \
-    --no-build-isolation --config-settings "--build-option=--cpp_ext" \
-    --config-settings "--build-option=--cuda_ext" ./
-```
-
-### Liger Kernel（优化训练效率）
-
-```bash
-pip install liger-kernel
-```
-
-## 验证安装
-
-**1. 检查版本**
-
-```bash
-python -c "import verl; print(verl.__version__)"
-```
-
-**2. 检查 GPU 可用性**
-
-```bash
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
-python -c "import torch; print(f'GPU count: {torch.cuda.device_count()}')"
-```
-
-**3. 运行最小测试**
-
-```bash
-# 快速验证（需要至少 1 GPU）
-python -c "
-from verl.trainer.main_ppo import main
-print('verl import successful')
-"
-```
-
-## 常见安装问题
-
-### 问题 1：PyTorch 版本冲突
-
-**症状**：安装 vLLM/SGLang 后 PyTorch 被降级
-
-**解决**：先安装推理框架，再安装 verl
-
-```bash
-# 先安装 vLLM（会自动安装兼容的 PyTorch）
-pip install vllm
-
-# 再安装 verl（不覆盖依赖）
-pip install --no-deps -e .
-```
-
-### 问题 2：CUDA 版本不匹配
-
-**症状**：`RuntimeError: CUDA version mismatch`
-
-**解决**：检查 CUDA 版本一致性
-
-```bash
-# 检查系统 CUDA
-nvcc --version
-
-# 检查 PyTorch CUDA
-python -c "import torch; print(torch.version.cuda)"
-```
-
-### 问题 3：tensordict 版本冲突
-
-**症状**：`ImportError: cannot import name ... from tensordict`
-
-**解决**：安装正确版本
-
-```bash
-pip install "tensordict>=0.8.0,<=0.10.0,!=0.9.0"
-```
-
-### 问题 4：Ray 启动失败
-
-**症状**：`RuntimeError: Unable to connect to Ray`
-
-**解决**：清理 Ray 会话并重启
-
-```bash
-ray stop --force
-ray start --head
-```
-
-## 环境变量配置
-
-推荐在 `~/.bashrc` 或训练脚本中设置：
-
-```bash
-# vLLM 优化
-export VLLM_USE_V1=1
-
-# Tokenizer 并行
-export TOKENIZERS_PARALLELISM=false
-
-# NCCL 调试（需要时开启）
-export NCCL_DEBUG=WARN
-
-# Ray 配置
-export RAY_DEDUP_LOGS=0
-```
+| 场景 | 建议 |
+| --- | --- |
+| 第一次学习 | Docker + vLLM |
+| 单机 8 卡研究 | FSDP2 + vLLM/SGLang |
+| 多机大模型 | Megatron + vLLM/SGLang/TRTLLM |
+| AgentRL / Tool Calling | SGLang 或 vLLM async rollout，优先看 `multi_turn` 配置 |
+| 视觉/多模态 | 先用官方 VLM 示例，不要从零拼配置 |
+| NPU/Ascend | 参考官方 `docs/ascend_tutorial`，不要直接套 CUDA 脚本 |
 
 ## 下一步
 
-安装完成后，继续阅读 [02-quick-start.md](02-quick-start.md) 运行第一个训练任务。
+- [02-quick-start.md](02-quick-start.md) - 跑通最小 PPO/GRPO 示例
+- [04-configuration.md](04-configuration.md) - 理解 Hydra 配置树

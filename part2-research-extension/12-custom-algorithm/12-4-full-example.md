@@ -1,207 +1,120 @@
 # 12-4 - 完整算法实现示例
 
-本章通过一个完整示例展示如何实现自定义 RL 算法。
+本章示例实现一个极简 Contrastive RL 变体，用来串联三个扩展点：advantage、policy loss、reward manager。它不是新论文算法，只是展示 v0.8.0 的正确接线方式。
 
-## 目标：实现一个简单的 Contrastive RL 算法
+## 目录结构
 
-### 算法概述
+```text
+contrastive_rl/
+├── __init__.py
+├── advantage.py
+├── loss.py
+└── reward_manager.py
+```
 
-- 使用正负样本对比学习
-- Advantage 基于正负样本的奖励差异
-- Loss 使用 contrastive 形式
+`__init__.py` 必须 import 三个模块，让注册器执行：
 
-## 步骤 1：实现 Advantage Estimator
+```python
+from .advantage import compute_contrastive_advantage
+from .loss import compute_contrastive_loss
+from .reward_manager import ContrastiveRewardManager
+```
+
+## 1. Advantage
 
 ```python
 # contrastive_rl/advantage.py
-import torch
 from verl.trainer.ppo.core_algos import register_adv_est
 
 @register_adv_est("contrastive_adv")
-def contrastive_advantage(data, config):
-    """
-    Contrastive Advantage:
-    - 正样本（高奖励）获得正 Advantage
-    - 负样本（低奖励）获得负 Advantage
-    """
-    rewards = data.batch['rewards']
-    response_mask = data.batch['response_mask']
-
-    # 获取正负样本阈值（可配置）
-    threshold = getattr(config, 'contrastive_threshold', 0.5)
-
-    # 二值化奖励
-    binary_rewards = (rewards > threshold).float()
-
-    # Contrastive Advantage: 正样本 +1，负样本 -1
-    advantages = 2 * binary_rewards - 1
-
-    # 归一化
-    advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-
-    # 应用掩码
-    advantages = advantages * response_mask
-
-    return advantages
+def compute_contrastive_advantage(data, gamma=1.0, lam=1.0, **kwargs):
+    # 教学示例：真实实现应参考 core_algos.py 中 GRPO/GPG 的 DataProto 字段处理
+    rewards = data.batch["token_level_scores"].sum(dim=-1)
+    baseline = rewards.mean()
+    advantages = rewards - baseline
+    data.batch["advantages"] = advantages.unsqueeze(-1).expand_as(data.batch["responses"]).float()
+    data.batch["returns"] = data.batch["advantages"]
+    return data
 ```
 
-## 步骤 2：实现 Policy Loss
+## 2. Policy Loss
 
 ```python
 # contrastive_rl/loss.py
 import torch
 from verl.trainer.ppo.core_algos import register_policy_loss
+from verl.utils.torch_functional import masked_mean
 
 @register_policy_loss("contrastive_loss")
-def contrastive_policy_loss(
-    old_log_prob, log_prob, advantages, response_mask,
-    loss_agg_mode, config, rollout_log_probs=None
-):
-    """
-    Contrastive Policy Loss:
-    - 最大化正样本的概率
-    - 最小化负样本的概率
-    """
-    # 计算 ratio
+def compute_contrastive_loss(old_log_prob, log_prob, advantages, response_mask, loss_agg_mode, config=None, rollout_log_probs=None):
     ratio = torch.exp(log_prob - old_log_prob)
-
-    # Contrastive weighting
-    # 正样本（advantages > 0）：增大 log prob
-    # 负样本（advantages < 0）：减小 log prob
-    weight = torch.sign(advantages)
-    loss = -weight * log_prob
-
-    # 可选：加入 margin
-    margin = getattr(config, 'contrastive_margin', 0.1)
-    if margin > 0:
-        # Margin-based contrastive loss
-        pos_mask = advantages > 0
-        neg_mask = advantages < 0
-
-        pos_loss = -log_prob * pos_mask.float()
-        neg_loss = torch.relu(log_prob + margin) * neg_mask.float()
-
-        loss = pos_loss + neg_loss
-
-    # 聚合
-    if loss_agg_mode == 'token-mean':
-        loss = (loss * response_mask).sum() / response_mask.sum()
-    else:
-        loss = (loss * response_mask).sum(dim=-1) / response_mask.sum(dim=-1)
-        loss = loss.mean()
-
-    return loss
+    margin = getattr(getattr(config, "policy_loss", None), "margin", 0.0) if config is not None else 0.0
+    loss_mat = -ratio * (advantages - margin)
+    loss = masked_mean(loss_mat, response_mask)
+    return loss, {"actor/contrastive_loss": loss.detach().item()}
 ```
 
-## 步骤 3：实现 Reward Manager
+## 3. Reward Manager
 
 ```python
-# contrastive_rl/reward.py
+# contrastive_rl/reward_manager.py
+from collections import defaultdict
 import torch
-from verl.workers.reward_manager import AbstractRewardManager, register_reward_manager
-from verl import DataProto
+from verl.workers.reward_manager import register
+from verl.workers.reward_manager.abstract import AbstractRewardManager
 
-@register_reward_manager("contrastive_rm")
+@register("contrastive_rm")
 class ContrastiveRewardManager(AbstractRewardManager):
-    """
-    Contrastive Reward Manager
-    生成正负样本对并计算奖励
-    """
+    def __init__(self, tokenizer, num_examine, compute_score=None, reward_fn_key="data_source", **kwargs):
+        self.tokenizer = tokenizer
+        self.num_examine = num_examine
+        self.compute_score = compute_score
+        self.reward_fn_key = reward_fn_key
 
-    def __init__(self, config):
-        super().__init__(config)
-        self.positive_threshold = config.get('positive_threshold', 0.8)
-
-    def __call__(self, data: DataProto) -> DataProto:
-        # 获取模型生成的 response
-        input_ids = data.batch['input_ids']
-        responses = self._decode_responses(input_ids)
-
-        # 获取 ground truth
-        ground_truths = data.non_tensor_batch.get('ground_truth', [])
-
-        # 计算奖励
-        rewards = []
-        for response, gt in zip(responses, ground_truths):
-            # 计算匹配分数
-            score = self._compute_match_score(response, gt)
-
-            # 归一化到 [0, 1]
-            reward = float(score >= self.positive_threshold)
-            rewards.append(reward)
-
-        data.batch['rewards'] = torch.tensor(rewards, dtype=torch.float32)
-        return data
-
-    def _compute_match_score(self, response, gt):
-        """计算匹配分数"""
-        # 简单示例：字符串包含
-        return 1.0 if gt in response else 0.0
+    def __call__(self, data, return_dict=False):
+        reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
+        extra = defaultdict(list)
+        for i in range(len(data)):
+            item = data[i]
+            valid_len = item.batch["attention_mask"][item.batch["prompts"].shape[-1]:].sum()
+            response = self.tokenizer.decode(item.batch["responses"][:valid_len], skip_special_tokens=True)
+            positive = item.non_tensor_batch.get("extra_info", {}).get("positive", "")
+            score = 1.0 if positive and positive in response else 0.0
+            reward_tensor[i, valid_len - 1] = score
+            extra["positive_hit"].append(score)
+        if return_dict:
+            return {"reward_tensor": reward_tensor, "reward_extra_info": extra}
+        return reward_tensor
 ```
 
-## 步骤 4：配置文件
-
-```yaml
-# contrastive_rl/config.yaml
-algorithm:
-  adv_estimator: contrastive_adv
-  contrastive_threshold: 0.5
-
-actor_rollout_ref:
-  actor:
-    loss_type: contrastive_loss
-    contrastive_margin: 0.1
-
-reward:
-  reward_manager: contrastive_rm
-  positive_threshold: 0.8
-```
-
-## 步骤 5：入口脚本
-
-```python
-# contrastive_rl/__init__.py
-from .advantage import contrastive_advantage
-from .loss import contrastive_policy_loss
-from .reward import ContrastiveRewardManager
-
-# 注册时会自动执行
-__all__ = ['contrastive_advantage', 'contrastive_policy_loss', 'ContrastiveRewardManager']
-```
+## 4. 训练命令
 
 ```bash
-# run_contrastive.sh
-#!/bin/bash
-
-# 加载自定义模块
-export VERL_USE_EXTERNAL_MODULES=/path/to/contrastive_rl
-
-python -m verl.trainer.main_ppo \
-    algorithm.adv_estimator=contrastive_adv \
-    algorithm.contrastive_threshold=0.5 \
-    actor_rollout_ref.actor.loss_type=contrastive_loss \
-    actor_rollout_ref.actor.contrastive_margin=0.1 \
-    reward.reward_manager=contrastive_rm \
-    reward.positive_threshold=0.8 \
-    data.train_files=./data/train.parquet \
-    actor_rollout_ref.model.path=Qwen/Qwen2-7B-Instruct \
-    trainer.n_gpus_per_node=8 \
-    trainer.total_epochs=10
+PYTHONPATH=$PWD:$PYTHONPATH python -m verl.trainer.main_ppo \
+  algorithm.adv_estimator=contrastive_adv \
+  actor_rollout_ref.actor.policy_loss.loss_mode=contrastive_loss \
+  +actor_rollout_ref.actor.policy_loss.margin=0.1 \
+  reward.reward_manager.name=contrastive_rm \
+  data.train_files=$HOME/data/contrastive/train.parquet \
+  data.val_files=$HOME/data/contrastive/test.parquet \
+  actor_rollout_ref.model.path=Qwen/Qwen2.5-0.5B-Instruct \
+  actor_rollout_ref.rollout.name=vllm \
+  trainer.logger='["console"]' \
+  trainer.total_training_steps=1
 ```
 
-## 项目结构
+## 5. 验证
 
-```
-contrastive_rl/
-├── __init__.py
-├── advantage.py      # Advantage Estimator
-├── loss.py           # Policy Loss
-├── reward.py         # Reward Manager
-├── config.yaml       # 配置
-└── run_contrastive.sh  # 运行脚本
-```
+- console 中应出现 `actor/contrastive_loss`。
+- reward extra info 中应出现 `positive_hit`。
+- 如果 `Unknown reward manager` 或 `Unknown policy loss`，说明 package 没有被 import。
+- 如果 Hydra 报自定义键不存在，给新增键加 `+`。
 
-## 下一步
+## 6. 研究实现建议
 
-- [13-modify-workers](../13-modify-workers/) - 修改 Worker
-- [14-paper-reproduction](../14-paper-reproduction/) - 论文复现
+教学示例为了短小，省略了很多严谨处理。真实论文复现时应：
+
+1. 参考官方 `core_algos.py` 中最接近的 estimator/loss。
+2. 保持 tensor shape 与 mask 完全一致。
+3. 给每个自定义分支加 metrics。
+4. 先固定一个 batch 做数值检查，再跑分布式。
