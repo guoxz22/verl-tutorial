@@ -207,7 +207,7 @@ trainer.total_training_steps=1 trainer.save_freq=-1 trainer.test_freq=-1 trainer
 | `reward.reward_function.*` | `reward.custom_reward_function.*` |
 | `actor_rollout_ref.actor.loss_type` | `actor_rollout_ref.actor.policy_loss.loss_mode` |
 | `data.micro_batch_size` in SFT | `data.micro_batch_size_per_gpu` |
-| `data.tool_provider` | `agent.default_agent_loop` / `agent_name` |
+| `data.tool_provider` | `actor_rollout_ref.rollout.agent.default_agent_loop` / 数据字段 `agent_name` |
 
 ---
 

@@ -118,7 +118,7 @@ trainer.n_gpus_per_node=8           # 每节点 GPU 数
 
 # Ray 配置
 ray_kwargs.ray_init.num_cpus=null   # CPU 数量
-ray_kwargs.ray_init.runtime_env={}
++ray_kwargs.ray_init.runtime_env={}
 
 # 超时配置
 actor_rollout_ref.nccl_timeout=600  # NCCL 超时（秒）

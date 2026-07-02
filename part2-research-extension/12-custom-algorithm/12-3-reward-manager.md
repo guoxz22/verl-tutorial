@@ -7,65 +7,50 @@
 Reward Manager 控制“如何把一批 rollout 样本变成 reward tensor”。v0.8.0 的注册器是：
 
 ```python
-from verl.workers.reward_manager import register
+from verl.experimental.reward_loop.reward_manager import register
 ```
 
-不是旧教程里的 `register_reward_manager`。
+不是旧教程里的 `register_reward_manager`。`verl.workers.reward_manager` 目录仍然存在，用于 legacy manager；但 `reward.reward_manager.source=register` 在 PPO reward loop 中解析的是 `verl.experimental.reward_loop.reward_manager` 注册表。
 
 ## 官方抽象类签名
 
 ```python
-class AbstractRewardManager:
-    def __init__(self, tokenizer, num_examine, compute_score, reward_fn_key="data_source", **kwargs): ...
-    def __call__(self, data, return_dict=False): ...
+class RewardManagerBase:
+    def __init__(self, config, tokenizer, compute_score): ...
+    async def run_single(self, data): ...
 ```
 
-`__call__` 应返回：
+`run_single` 处理单条样本或一条 trajectory，应返回：
 
-- `torch.Tensor`：形状通常与 `data.batch["responses"]` 一致，只在需要给 reward 的 token 位置非零。
-- 或 `dict`：包含 `reward_tensor` 和 `reward_extra_info`。
+- `reward_score`：标量 reward。
+- `reward_extra_info`：可选监控字段。
+
+框架会把标量 reward 装配到 token-level reward tensor 中。
 
 ## 最小模板
 
 ```python
 # custom_reward_manager.py
-from collections import defaultdict
-from typing import Any
-
-import torch
 from verl import DataProto
-from verl.workers.reward_manager import register
-from verl.workers.reward_manager.abstract import AbstractRewardManager
+from verl.experimental.reward_loop.reward_manager import register
+from verl.experimental.reward_loop.reward_manager.base import RewardManagerBase
 
 @register("my_custom_rm")
-class MyCustomRewardManager(AbstractRewardManager):
-    def __init__(self, tokenizer, num_examine, compute_score=None, reward_fn_key="data_source", **kwargs):
-        self.tokenizer = tokenizer
-        self.num_examine = num_examine
-        self.compute_score = compute_score
-        self.reward_fn_key = reward_fn_key
+class MyCustomRewardManager(RewardManagerBase):
+    async def run_single(self, data: DataProto) -> dict:
+        data_item = data[-1]
+        response_ids = data_item.batch["responses"]
+        response_length = response_ids.shape[-1]
+        valid_response_length = data_item.batch["attention_mask"][-response_length:].sum()
+        valid_response_ids = response_ids[:valid_response_length]
 
-    def __call__(self, data: DataProto, return_dict: bool = False) -> torch.Tensor | dict[str, Any]:
-        reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
-        reward_extra_info = defaultdict(list)
+        response_str = await self.loop.run_in_executor(
+            None, lambda: self.tokenizer.decode(valid_response_ids, skip_special_tokens=True)
+        )
+        ground_truth = data_item.non_tensor_batch["reward_model"]["ground_truth"]
+        score = 1.0 if str(ground_truth) in response_str else 0.0
 
-        for i in range(len(data)):
-            item = data[i]
-            response_ids = item.batch["responses"]
-            attention_mask = item.batch["attention_mask"]
-            prompt_len = item.batch["prompts"].shape[-1]
-            valid_response_len = attention_mask[prompt_len:].sum()
-            valid_response_ids = response_ids[:valid_response_len]
-            response_str = self.tokenizer.decode(valid_response_ids, skip_special_tokens=True)
-
-            ground_truth = item.non_tensor_batch["reward_model"]["ground_truth"]
-            score = 1.0 if str(ground_truth) in response_str else 0.0
-            reward_tensor[i, valid_response_len - 1] = score
-            reward_extra_info["exact_match"].append(score)
-
-        if return_dict:
-            return {"reward_tensor": reward_tensor, "reward_extra_info": reward_extra_info}
-        return reward_tensor
+        return {"reward_score": score, "reward_extra_info": {"exact_match": score}}
 ```
 
 ## 配置使用
@@ -75,7 +60,16 @@ python -m verl.trainer.main_ppo \
   reward.reward_manager.name=my_custom_rm
 ```
 
-若 manager 放在独立文件里，需要保证模块被 import。更稳妥的方式是做成 package，在 `__init__.py` 里 import 注册类。
+若使用 `source=register`，需要保证注册模块在 trainer 启动前被 import。更稳妥的方式是做成 package，在 `__init__.py` 里 import 注册类。
+
+如果只想从独立文件加载类，也可以走 `importlib`：
+
+```bash
+python -m verl.trainer.main_ppo \
+  reward.reward_manager.source=importlib \
+  reward.reward_manager.module.path=$PWD/custom_reward_manager.py \
+  reward.reward_manager.name=MyCustomRewardManager
+```
 
 ## 何时写 Reward Function，何时写 Reward Manager
 
@@ -94,10 +88,12 @@ python -m verl.trainer.main_ppo \
 ```bash
 reward.reward_manager.name=naive
 reward.reward_manager.name=dapo
-reward.reward_manager.name=prime
+reward.reward_manager.name=gdpo
+reward.reward_manager.name=rate_limited
+reward.reward_manager.name=remote
 ```
 
-具体可看 `verl/workers/reward_manager/__init__.py` 和对应文件。
+具体可看 `verl/experimental/reward_loop/reward_manager/__init__.py` 和对应文件。`prime` 在 legacy `verl.workers.reward_manager` 里存在，但不是 v0.8.0 PPO reward loop 注册表的默认内置名。
 
 ## 常见错误
 

@@ -99,7 +99,7 @@ HF rollout 主要用于调试，不建议作为高吞吐训练配置。
 | --- | --- |
 | rollout OOM | 降低 `n`、`max_num_batched_tokens`、`gpu_memory_utilization` |
 | vLLM/SGLang 参数不生效 | 检查是否加了 `+actor_rollout_ref.rollout.engine_kwargs.<backend>.*` |
-| 多轮工具不触发 | 检查 `multi_turn.enable`、工具路径、`agent.default_agent_loop` |
+| 多轮工具不触发 | 检查 `multi_turn.enable`、工具路径、`actor_rollout_ref.rollout.agent.default_agent_loop` |
 | TRTLLM import/build 失败 | 使用官方 Docker 或确认 `pip install -e .[trtllm]` 完成 |
 
 ---
