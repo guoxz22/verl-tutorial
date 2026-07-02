@@ -1,7 +1,7 @@
 # 12-2 - 自定义 Policy Loss
 
 <!-- NAV_START -->
-> 导航： [上一篇：12-1 - 扩展 Advantage Estimator](12-1-advantage.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-3 - 自定义 Reward Manager](12-3-reward-manager.md)
+> 阅读： [← 12-1 - 扩展 Advantage Estimator](12-1-advantage.md) · [目录](../../README.md#完整目录) · [12-3 - 自定义 Reward Manager →](12-3-reward-manager.md)
 <!-- NAV_END -->
 
 Policy loss 决定 actor 如何根据 log probability、advantage 和 mask 更新。v0.8.0 的注册入口是 `register_policy_loss`，配置键是：
@@ -108,5 +108,5 @@ actor_rollout_ref.actor.policy_loss.loss_mode=my_loss
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：12-1 - 扩展 Advantage Estimator](12-1-advantage.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-3 - 自定义 Reward Manager](12-3-reward-manager.md)
+> 阅读： [← 12-1 - 扩展 Advantage Estimator](12-1-advantage.md) · [目录](../../README.md#完整目录) · [12-3 - 自定义 Reward Manager →](12-3-reward-manager.md)
 <!-- NAV_BOTTOM_END -->

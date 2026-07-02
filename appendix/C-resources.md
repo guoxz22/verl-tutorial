@@ -1,7 +1,7 @@
 # C - 进阶学习资源
 
 <!-- NAV_START -->
-> 导航： [上一篇：B - 常见错误与解决](B-common-errors.md) | [返回目录](../README.md#完整目录)
+> 阅读： [← B - 常见错误与解决](B-common-errors.md) · [目录](../README.md#完整目录)
 <!-- NAV_END -->
 
 本章提供进一步学习 verl 的资源。
@@ -118,5 +118,5 @@ Happy Training!
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：B - 常见错误与解决](B-common-errors.md) | [返回目录](../README.md#完整目录)
+> 阅读： [← B - 常见错误与解决](B-common-errors.md) · [目录](../README.md#完整目录)
 <!-- NAV_BOTTOM_END -->

@@ -1,7 +1,7 @@
 # 11 - 扩展机制总览
 
 <!-- NAV_START -->
-> 导航： [上一篇：10-4 - 集群调度](../part1-engineering-training/10-operations/10-4-cluster.md) | [返回目录](../README.md#完整目录) | [下一篇：12-1 - 扩展 Advantage Estimator](12-custom-algorithm/12-1-advantage.md)
+> 阅读： [← 10-4 - 集群调度](../part1-engineering-training/10-operations/10-4-cluster.md) · [目录](../README.md#完整目录) · [12-1 - 扩展 Advantage Estimator →](12-custom-algorithm/12-1-advantage.md)
 <!-- NAV_END -->
 
 verl 的扩展点很多，但对研究者最重要的是三类：算法数学、奖励系统、Worker/后端。先分清扩展层次，能少走很多弯路。
@@ -108,5 +108,5 @@ Hydra 结构化配置中，不存在的键需要加 `+`：
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：10-4 - 集群调度](../part1-engineering-training/10-operations/10-4-cluster.md) | [返回目录](../README.md#完整目录) | [下一篇：12-1 - 扩展 Advantage Estimator](12-custom-algorithm/12-1-advantage.md)
+> 阅读： [← 10-4 - 集群调度](../part1-engineering-training/10-operations/10-4-cluster.md) · [目录](../README.md#完整目录) · [12-1 - 扩展 Advantage Estimator →](12-custom-algorithm/12-1-advantage.md)
 <!-- NAV_BOTTOM_END -->

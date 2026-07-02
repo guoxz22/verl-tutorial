@@ -1,7 +1,7 @@
 # 09-3 - 奖励配置
 
 <!-- NAV_START -->
-> 导航： [上一篇：09-2 - 自定义数据集](09-2-custom-dataset.md) | [返回目录](../../README.md#完整目录) | [下一篇：10-1 - 训练监控](../10-operations/10-1-monitoring.md)
+> 阅读： [← 09-2 - 自定义数据集](09-2-custom-dataset.md) · [目录](../../README.md#完整目录) · [10-1 - 训练监控 →](../10-operations/10-1-monitoring.md)
 <!-- NAV_END -->
 
 v0.8.0 推荐把奖励相关配置统一写在 `reward.*` 下。旧脚本里可能还能看到顶层 `custom_reward_function.*` 或 `reward_model.*`，那是兼容字段；新教程统一使用当前 `reward/reward.yaml` 的结构。
@@ -126,5 +126,5 @@ data.reward_fn_key=my_source_key
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：09-2 - 自定义数据集](09-2-custom-dataset.md) | [返回目录](../../README.md#完整目录) | [下一篇：10-1 - 训练监控](../10-operations/10-1-monitoring.md)
+> 阅读： [← 09-2 - 自定义数据集](09-2-custom-dataset.md) · [目录](../../README.md#完整目录) · [10-1 - 训练监控 →](../10-operations/10-1-monitoring.md)
 <!-- NAV_BOTTOM_END -->

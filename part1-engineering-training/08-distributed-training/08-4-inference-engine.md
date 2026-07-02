@@ -1,7 +1,7 @@
 # 08-4 - 推理引擎配置
 
 <!-- NAV_START -->
-> 导航： [上一篇：08-3 - 训练后端选择](08-3-backends.md) | [返回目录](../../README.md#完整目录) | [下一篇：09-1 - 数据预处理](../09-data-and-reward/09-1-data-preprocess.md)
+> 阅读： [← 08-3 - 训练后端选择](08-3-backends.md) · [目录](../../README.md#完整目录) · [09-1 - 数据预处理 →](../09-data-and-reward/09-1-data-preprocess.md)
 <!-- NAV_END -->
 
 Rollout 后端负责生成训练样本，是 verl 性能和稳定性的关键。v0.8.0 的配置入口是：
@@ -105,5 +105,5 @@ HF rollout 主要用于调试，不建议作为高吞吐训练配置。
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：08-3 - 训练后端选择](08-3-backends.md) | [返回目录](../../README.md#完整目录) | [下一篇：09-1 - 数据预处理](../09-data-and-reward/09-1-data-preprocess.md)
+> 阅读： [← 08-3 - 训练后端选择](08-3-backends.md) · [目录](../../README.md#完整目录) · [09-1 - 数据预处理 →](../09-data-and-reward/09-1-data-preprocess.md)
 <!-- NAV_BOTTOM_END -->

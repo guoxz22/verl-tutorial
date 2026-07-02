@@ -1,7 +1,7 @@
 # 08-1 - 单机多卡训练
 
 <!-- NAV_START -->
-> 导航： [上一篇：07-3 - Agent Loop 训练](../07-agent-rl/07-3-agent-loop.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-2 - 多机训练](08-2-multi-node.md)
+> 阅读： [← 07-3 - Agent Loop 训练](../07-agent-rl/07-3-agent-loop.md) · [目录](../../README.md#完整目录) · [08-2 - 多机训练 →](08-2-multi-node.md)
 <!-- NAV_END -->
 
 本章介绍单机多 GPU 的分布式训练配置。
@@ -124,5 +124,5 @@ python -m verl.trainer.main_ppo \
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：07-3 - Agent Loop 训练](../07-agent-rl/07-3-agent-loop.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-2 - 多机训练](08-2-multi-node.md)
+> 阅读： [← 07-3 - Agent Loop 训练](../07-agent-rl/07-3-agent-loop.md) · [目录](../../README.md#完整目录) · [08-2 - 多机训练 →](08-2-multi-node.md)
 <!-- NAV_BOTTOM_END -->

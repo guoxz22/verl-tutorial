@@ -1,7 +1,7 @@
 # 13-1 - 修改 Actor Worker
 
 <!-- NAV_START -->
-> 导航： [上一篇：12-4 - 完整算法实现示例](../12-custom-algorithm/12-4-full-example.md) | [返回目录](../../README.md#完整目录) | [下一篇：13-2 - 修改 Critic Worker](13-2-critic-worker.md)
+> 阅读： [← 12-4 - 完整算法实现示例](../12-custom-algorithm/12-4-full-example.md) · [目录](../../README.md#完整目录) · [13-2 - 修改 Critic Worker →](13-2-critic-worker.md)
 <!-- NAV_END -->
 
 v0.8.0 的 Actor/Ref/Rollout 逻辑主要集中在 `verl/workers/engine_workers.py`，底层模型实现放在 `verl/workers/engine/<backend>/`。旧版教程里提到的 `fsdp_workers.py`、`megatron_workers.py` 不再是本版主要入口。
@@ -90,5 +90,5 @@ v0.8.0 没有把 `trainer.custom_actor_worker` 作为官方稳定配置入口。
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：12-4 - 完整算法实现示例](../12-custom-algorithm/12-4-full-example.md) | [返回目录](../../README.md#完整目录) | [下一篇：13-2 - 修改 Critic Worker](13-2-critic-worker.md)
+> 阅读： [← 12-4 - 完整算法实现示例](../12-custom-algorithm/12-4-full-example.md) · [目录](../../README.md#完整目录) · [13-2 - 修改 Critic Worker →](13-2-critic-worker.md)
 <!-- NAV_BOTTOM_END -->
