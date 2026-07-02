@@ -13,7 +13,7 @@ verl 的扩展点很多，但对研究者最重要的是三类：算法数学、
 | 改 advantage 估计 | `verl.trainer.ppo.core_algos.register_adv_est` | `algorithm.adv_estimator=<name>` |
 | 改 policy loss | `register_policy_loss` | `actor_rollout_ref.actor.policy_loss.loss_mode=<name>` |
 | 改 reward 函数 | 独立 Python 文件 | `reward.custom_reward_function.path/name` |
-| 改 reward manager | `verl.workers.reward_manager.register` | `reward.reward_manager.name=<name>` |
+| 改 reward manager | `verl.experimental.reward_loop.reward_manager.register` | `reward.reward_manager.name=<name>` |
 | 改 rollout 行为 | `verl/workers/rollout/*` 或 AgentLoop | `actor_rollout_ref.rollout.*` |
 | 改 actor/critic 执行 | `verl/workers/engine_workers.py` 和 engine config | `model_engine=*`、`actor_rollout_ref.actor.*` |
 
@@ -56,12 +56,13 @@ actor_rollout_ref.actor.policy_loss.loss_mode=my_loss
 ### Reward Manager
 
 ```python
-from verl.workers.reward_manager import register
-from verl.workers.reward_manager.abstract import AbstractRewardManager
+from verl.experimental.reward_loop.reward_manager import register
+from verl.experimental.reward_loop.reward_manager.base import RewardManagerBase
 
 @register("my_rm")
-class MyRewardManager(AbstractRewardManager):
-    ...
+class MyRewardManager(RewardManagerBase):
+    async def run_single(self, data):
+        return {"reward_score": 0.0, "reward_extra_info": {}}
 ```
 
 使用：

@@ -83,7 +83,7 @@ actor_rollout_ref.rollout.agent.agent_loop_config_path=$PWD/agent_loop.yaml
 
 ## 常见坑
 
-- 不要用 `data.tool_provider`。v0.8.0 的选择入口是 `agent.default_agent_loop` 或数据里的 `agent_name`。
+- 不要用 `data.tool_provider`。v0.8.0 的选择入口是 `actor_rollout_ref.rollout.agent.default_agent_loop` 或数据里的 `agent_name`。
 - 工具不应返回无限长文本，需要设置 `max_tool_response_length`。
 - 工具调用失败不是总是训练失败；先看 trace，再决定 reward 是否惩罚。
 - 多轮任务先用 `rollout.n=1` 调试格式，再增加采样数。

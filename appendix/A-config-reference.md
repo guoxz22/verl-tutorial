@@ -115,8 +115,8 @@
 | `reward.custom_reward_function.path` | `null` | 自定义 reward 文件 |
 | `reward.custom_reward_function.name` | `compute_score` | reward 函数名 |
 | `reward.reward_manager.source` | `register` | manager 来源 |
-| `reward.reward_manager.name` | `naive` | manager 名称 |
-| `reward.reward_manager.module.path` | `null` | 自定义 manager 模块路径 |
+| `reward.reward_manager.name` | `naive` | manager 名称；`register` 来源默认查 `verl.experimental.reward_loop.reward_manager` |
+| `reward.reward_manager.module.path` | `null` | `source=importlib` 时的自定义 manager 模块路径 |
 | `reward.reward_model.enable` | `False` | 是否启用 Reward Model |
 | `reward.reward_model.model_path` | `null` | Reward Model 路径 |
 | `reward.reward_model.rollout.name` | 必填（启用 RM 时） | RM 推理后端 |
@@ -163,7 +163,7 @@
 | `actor_rollout_ref.actor.loss_type` | `actor_rollout_ref.actor.policy_loss.loss_mode` |
 | `data.micro_batch_size` in SFT | `data.micro_batch_size_per_gpu` |
 | `actor_rollout_ref.rollout.multi_turn.tool.dict.*` | `tool_config_path` 或 `function_tool_path` |
-| `data.tool_provider` | `agent.default_agent_loop` 或数据字段 `agent_name` |
+| `data.tool_provider` | `actor_rollout_ref.rollout.agent.default_agent_loop` 或数据字段 `agent_name` |
 
 ---
 

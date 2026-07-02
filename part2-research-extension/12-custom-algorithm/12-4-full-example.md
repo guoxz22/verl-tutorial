@@ -62,33 +62,22 @@ def compute_contrastive_loss(old_log_prob, log_prob, advantages, response_mask, 
 
 ```python
 # contrastive_rl/reward_manager.py
-from collections import defaultdict
-import torch
-from verl.workers.reward_manager import register
-from verl.workers.reward_manager.abstract import AbstractRewardManager
+from verl.experimental.reward_loop.reward_manager import register
+from verl.experimental.reward_loop.reward_manager.base import RewardManagerBase
 
 @register("contrastive_rm")
-class ContrastiveRewardManager(AbstractRewardManager):
-    def __init__(self, tokenizer, num_examine, compute_score=None, reward_fn_key="data_source", **kwargs):
-        self.tokenizer = tokenizer
-        self.num_examine = num_examine
-        self.compute_score = compute_score
-        self.reward_fn_key = reward_fn_key
-
-    def __call__(self, data, return_dict=False):
-        reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
-        extra = defaultdict(list)
-        for i in range(len(data)):
-            item = data[i]
-            valid_len = item.batch["attention_mask"][item.batch["prompts"].shape[-1]:].sum()
-            response = self.tokenizer.decode(item.batch["responses"][:valid_len], skip_special_tokens=True)
-            positive = item.non_tensor_batch.get("extra_info", {}).get("positive", "")
-            score = 1.0 if positive and positive in response else 0.0
-            reward_tensor[i, valid_len - 1] = score
-            extra["positive_hit"].append(score)
-        if return_dict:
-            return {"reward_tensor": reward_tensor, "reward_extra_info": extra}
-        return reward_tensor
+class ContrastiveRewardManager(RewardManagerBase):
+    async def run_single(self, data):
+        item = data[-1]
+        response_ids = item.batch["responses"]
+        response_length = response_ids.shape[-1]
+        valid_len = item.batch["attention_mask"][-response_length:].sum()
+        response = await self.loop.run_in_executor(
+            None, lambda: self.tokenizer.decode(response_ids[:valid_len], skip_special_tokens=True)
+        )
+        positive = item.non_tensor_batch.get("extra_info", {}).get("positive", "")
+        score = 1.0 if positive and positive in response else 0.0
+        return {"reward_score": score, "reward_extra_info": {"positive_hit": score}}
 ```
 
 ## 4. 训练命令

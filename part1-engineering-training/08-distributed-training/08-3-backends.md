@@ -14,7 +14,7 @@ verl v0.8.0 把训练后端收敛到统一 worker / model engine 体系。学习
 | Megatron-LM | 大模型、多机、TP/PP/CP/EP | `model_engine=megatron` |
 | VeOmni | MoE、多模态、NPU/GPU 进阶场景 | `model_engine=veomni` |
 | TorchTitan | TorchTitan 生态实验 | `model_engine=torchtitan` |
-| Automodel | 新统一 engine 路径，适合跟官方示例 | `engine=automodel` 或 `model_engine=automodel` 相关示例 |
+| Automodel | NeMo Automodel 后端，v0.8.0 主要参考 SFT 示例 | `engine=automodel` |
 
 ## FSDP / FSDP2
 
@@ -61,7 +61,7 @@ critic.megatron.tensor_model_parallel_size=2
 
 ## VeOmni / TorchTitan / Automodel
 
-这些后端在 v0.8.0 中已经进入官方 examples 和生成配置，但使用门槛高于 FSDP。建议原则：
+VeOmni / TorchTitan 已进入 v0.8.0 的 PPO `model_engine` 配置；Automodel 有 engine 实现和 SFT 示例，常见入口是 `engine=automodel`，不要把它当成主 PPO 生成配置里的 `model_engine=automodel`。建议原则：
 
 1. 先从 `examples/grpo_trainer/*veomni*.sh`、`examples/sft/*automodel*.sh` 复制可运行脚本。
 2. 不要手写完整配置树；用官方脚本中的 env vars 调模型、节点、并行度。

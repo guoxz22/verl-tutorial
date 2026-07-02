@@ -57,6 +57,7 @@ reward.reward_manager.name=gdpo
 ```
 
 自定义 manager 见 [12-3-reward-manager.md](../../part2-research-extension/12-custom-algorithm/12-3-reward-manager.md)。
+v0.8.0 的 PPO reward loop 默认从 `verl.experimental.reward_loop.reward_manager` 注册表查找 manager；独立文件里的 manager 可以用 `reward.reward_manager.source=importlib` 加载。
 
 ## Reward Model
 

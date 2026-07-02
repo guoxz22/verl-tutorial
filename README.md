@@ -21,9 +21,9 @@ verl 是大模型后训练框架，核心目标是把策略模型、价值模型
 | SFT 入口 | `torchrun ... -m verl.trainer.sft_trainer` |
 | Reward 配置 | 推荐 `reward.custom_reward_function.*`、`reward.reward_model.*`、`reward.reward_manager.*` |
 | Rollout 后端 | `hf`、`vllm`、`sglang`、`trtllm` |
-| 训练后端 | 默认 DP/FSDP，进阶可用 `model_engine=megatron`、`veomni`、`torchtitan`、`automodel` |
-| 多轮/工具 | `actor_rollout_ref.rollout.multi_turn.*` + `tool_config_path` / `function_tool_path` / `agent.*` |
-| 自定义扩展 | `register_adv_est`、`register_policy_loss`、`reward_manager.register` |
+| 训练后端 | PPO 默认 DP/FSDP，进阶可用 `model_engine=megatron`、`veomni`、`torchtitan`；SFT 可参考 `engine=automodel` 示例 |
+| 多轮/工具 | `actor_rollout_ref.rollout.multi_turn.*` + `tool_config_path` / `function_tool_path` / `actor_rollout_ref.rollout.agent.*` |
+| 自定义扩展 | `register_adv_est`、`register_policy_loss`、`verl.experimental.reward_loop.reward_manager.register` |
 
 > 说明：verl 的 `main` 分支更新很快。本教程以最新稳定 release v0.8.0 为基准；若使用 `main`，优先对照源码中的 `verl/trainer/config/_generated_ppo_trainer.yaml`。
 
