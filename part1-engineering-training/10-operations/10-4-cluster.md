@@ -1,7 +1,7 @@
 # 10-4 - 集群调度
 
 <!-- NAV_START -->
-> 导航： [上一篇：10-3 - 性能分析与调优](10-3-profiling.md) | [返回目录](../../README.md#完整目录) | [下一篇：11 - 扩展机制总览](../../part2-research-extension/11-extension-overview.md)
+> 阅读： [← 10-3 - 性能分析与调优](10-3-profiling.md) · [目录](../../README.md#完整目录) · [11 - 扩展机制总览 →](../../part2-research-extension/11-extension-overview.md)
 <!-- NAV_END -->
 
 本章介绍如何在集群上运行 verl 训练。
@@ -137,5 +137,5 @@ sstat -j <job_id>
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：10-3 - 性能分析与调优](10-3-profiling.md) | [返回目录](../../README.md#完整目录) | [下一篇：11 - 扩展机制总览](../../part2-research-extension/11-extension-overview.md)
+> 阅读： [← 10-3 - 性能分析与调优](10-3-profiling.md) · [目录](../../README.md#完整目录) · [11 - 扩展机制总览 →](../../part2-research-extension/11-extension-overview.md)
 <!-- NAV_BOTTOM_END -->

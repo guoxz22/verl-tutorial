@@ -1,7 +1,7 @@
 # 00 - 什么是 verl
 
 <!-- NAV_START -->
-> 导航： [返回目录](../README.md#完整目录) | [下一篇：01 - 安装与配置](01-installation.md)
+> 阅读： [目录](../README.md#完整目录) · [01 - 安装与配置 →](01-installation.md)
 <!-- NAV_END -->
 
 ## 概述
@@ -92,5 +92,5 @@ verl = Ray 分布式编排 + Hydra 配置 + PyTorch 训练后端 + 高吞吐 rol
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [返回目录](../README.md#完整目录) | [下一篇：01 - 安装与配置](01-installation.md)
+> 阅读： [目录](../README.md#完整目录) · [01 - 安装与配置 →](01-installation.md)
 <!-- NAV_BOTTOM_END -->

@@ -1,7 +1,7 @@
 # 12-3 - 自定义 Reward Manager
 
 <!-- NAV_START -->
-> 导航： [上一篇：12-2 - 自定义 Policy Loss](12-2-policy-loss.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-4 - 完整算法实现示例](12-4-full-example.md)
+> 阅读： [← 12-2 - 自定义 Policy Loss](12-2-policy-loss.md) · [目录](../../README.md#完整目录) · [12-4 - 完整算法实现示例 →](12-4-full-example.md)
 <!-- NAV_END -->
 
 Reward Manager 控制“如何把一批 rollout 样本变成 reward tensor”。v0.8.0 的注册器是：
@@ -111,5 +111,5 @@ reward.reward_manager.name=prime
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：12-2 - 自定义 Policy Loss](12-2-policy-loss.md) | [返回目录](../../README.md#完整目录) | [下一篇：12-4 - 完整算法实现示例](12-4-full-example.md)
+> 阅读： [← 12-2 - 自定义 Policy Loss](12-2-policy-loss.md) · [目录](../../README.md#完整目录) · [12-4 - 完整算法实现示例 →](12-4-full-example.md)
 <!-- NAV_BOTTOM_END -->

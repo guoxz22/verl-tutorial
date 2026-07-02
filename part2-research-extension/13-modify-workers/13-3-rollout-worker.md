@@ -1,7 +1,7 @@
 # 13-3 - 修改 Rollout Worker
 
 <!-- NAV_START -->
-> 导航： [上一篇：13-2 - 修改 Critic Worker](13-2-critic-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：14-1 - 论文复现工作流](../14-paper-reproduction/14-1-reproduce-workflow.md)
+> 阅读： [← 13-2 - 修改 Critic Worker](13-2-critic-worker.md) · [目录](../../README.md#完整目录) · [14-1 - 论文复现工作流 →](../14-paper-reproduction/14-1-reproduce-workflow.md)
 <!-- NAV_END -->
 
 Rollout 负责生成 response。v0.8.0 的 rollout 代码已经按后端拆分，不再是旧路径 `verl/workers/rollout/vllm/`。
@@ -100,5 +100,5 @@ verl/workers/config/rollout.py
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：13-2 - 修改 Critic Worker](13-2-critic-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：14-1 - 论文复现工作流](../14-paper-reproduction/14-1-reproduce-workflow.md)
+> 阅读： [← 13-2 - 修改 Critic Worker](13-2-critic-worker.md) · [目录](../../README.md#完整目录) · [14-1 - 论文复现工作流 →](../14-paper-reproduction/14-1-reproduce-workflow.md)
 <!-- NAV_BOTTOM_END -->

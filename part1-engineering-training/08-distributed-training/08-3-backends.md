@@ -1,7 +1,7 @@
 # 08-3 - 训练后端选择
 
 <!-- NAV_START -->
-> 导航： [上一篇：08-2 - 多机训练](08-2-multi-node.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-4 - 推理引擎配置](08-4-inference-engine.md)
+> 阅读： [← 08-2 - 多机训练](08-2-multi-node.md) · [目录](../../README.md#完整目录) · [08-4 - 推理引擎配置 →](08-4-inference-engine.md)
 <!-- NAV_END -->
 
 verl v0.8.0 把训练后端收敛到统一 worker / model engine 体系。学习时不要一开始就追最大规模，先按“能跑 -> 能扩 -> 能调”的顺序选后端。
@@ -88,5 +88,5 @@ critic.megatron.tensor_model_parallel_size=2
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：08-2 - 多机训练](08-2-multi-node.md) | [返回目录](../../README.md#完整目录) | [下一篇：08-4 - 推理引擎配置](08-4-inference-engine.md)
+> 阅读： [← 08-2 - 多机训练](08-2-multi-node.md) · [目录](../../README.md#完整目录) · [08-4 - 推理引擎配置 →](08-4-inference-engine.md)
 <!-- NAV_BOTTOM_END -->

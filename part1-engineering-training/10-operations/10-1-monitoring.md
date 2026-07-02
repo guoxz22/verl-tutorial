@@ -1,7 +1,7 @@
 # 10-1 - 训练监控
 
 <!-- NAV_START -->
-> 导航： [上一篇：09-3 - 奖励配置](../09-data-and-reward/09-3-reward-config.md) | [返回目录](../../README.md#完整目录) | [下一篇：10-2 - 检查点管理](10-2-checkpoint.md)
+> 阅读： [← 09-3 - 奖励配置](../09-data-and-reward/09-3-reward-config.md) · [目录](../../README.md#完整目录) · [10-2 - 检查点管理 →](10-2-checkpoint.md)
 <!-- NAV_END -->
 
 本章介绍如何监控 verl 训练过程。
@@ -126,5 +126,5 @@ trainer.log_val_generations=10  # 记录 10 条生成
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：09-3 - 奖励配置](../09-data-and-reward/09-3-reward-config.md) | [返回目录](../../README.md#完整目录) | [下一篇：10-2 - 检查点管理](10-2-checkpoint.md)
+> 阅读： [← 09-3 - 奖励配置](../09-data-and-reward/09-3-reward-config.md) · [目录](../../README.md#完整目录) · [10-2 - 检查点管理 →](10-2-checkpoint.md)
 <!-- NAV_BOTTOM_END -->

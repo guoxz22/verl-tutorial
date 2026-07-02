@@ -1,7 +1,7 @@
 # 14-1 - 论文复现工作流
 
 <!-- NAV_START -->
-> 导航： [上一篇：13-3 - 修改 Rollout Worker](../13-modify-workers/13-3-rollout-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：14-2 - 案例研究](14-2-case-studies.md)
+> 阅读： [← 13-3 - 修改 Rollout Worker](../13-modify-workers/13-3-rollout-worker.md) · [目录](../../README.md#完整目录) · [14-2 - 案例研究 →](14-2-case-studies.md)
 <!-- NAV_END -->
 
 本章介绍使用 verl 复现论文的系统化方法。
@@ -158,5 +158,5 @@ python -m verl.trainer.main_ppo \
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：13-3 - 修改 Rollout Worker](../13-modify-workers/13-3-rollout-worker.md) | [返回目录](../../README.md#完整目录) | [下一篇：14-2 - 案例研究](14-2-case-studies.md)
+> 阅读： [← 13-3 - 修改 Rollout Worker](../13-modify-workers/13-3-rollout-worker.md) · [目录](../../README.md#完整目录) · [14-2 - 案例研究 →](14-2-case-studies.md)
 <!-- NAV_BOTTOM_END -->

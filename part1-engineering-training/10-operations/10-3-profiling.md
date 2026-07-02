@@ -1,7 +1,7 @@
 # 10-3 - 性能分析与调优
 
 <!-- NAV_START -->
-> 导航： [上一篇：10-2 - 检查点管理](10-2-checkpoint.md) | [返回目录](../../README.md#完整目录) | [下一篇：10-4 - 集群调度](10-4-cluster.md)
+> 阅读： [← 10-2 - 检查点管理](10-2-checkpoint.md) · [目录](../../README.md#完整目录) · [10-4 - 集群调度 →](10-4-cluster.md)
 <!-- NAV_END -->
 
 本章介绍如何分析和优化 verl 训练性能。
@@ -133,5 +133,5 @@ train/samples_per_second # 吞吐量
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：10-2 - 检查点管理](10-2-checkpoint.md) | [返回目录](../../README.md#完整目录) | [下一篇：10-4 - 集群调度](10-4-cluster.md)
+> 阅读： [← 10-2 - 检查点管理](10-2-checkpoint.md) · [目录](../../README.md#完整目录) · [10-4 - 集群调度 →](10-4-cluster.md)
 <!-- NAV_BOTTOM_END -->

@@ -1,7 +1,7 @@
 # 07-1 - Tool Calling 训练
 
 <!-- NAV_START -->
-> 导航： [上一篇：06-2 - 模型规模与调参](../06-sft-and-tuning/06-2-model-tuning.md) | [返回目录](../../README.md#完整目录) | [下一篇：07-2 - 多轮对话 RL 训练](07-2-multi-turn.md)
+> 阅读： [← 06-2 - 模型规模与调参](../06-sft-and-tuning/06-2-model-tuning.md) · [目录](../../README.md#完整目录) · [07-2 - 多轮对话 RL 训练 →](07-2-multi-turn.md)
 <!-- NAV_END -->
 
 Tool Calling 的核心不是“给模型一个工具列表”这么简单，而是让 rollout 在生成过程中进入“模型 -> 工具 -> 模型”的闭环。v0.8.0 的关键配置在 `actor_rollout_ref.rollout.multi_turn` 和 `actor_rollout_ref.rollout.agent` 下。
@@ -125,5 +125,5 @@ Tool Agent Loop 通常需要 parquet 中包含：
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：06-2 - 模型规模与调参](../06-sft-and-tuning/06-2-model-tuning.md) | [返回目录](../../README.md#完整目录) | [下一篇：07-2 - 多轮对话 RL 训练](07-2-multi-turn.md)
+> 阅读： [← 06-2 - 模型规模与调参](../06-sft-and-tuning/06-2-model-tuning.md) · [目录](../../README.md#完整目录) · [07-2 - 多轮对话 RL 训练 →](07-2-multi-turn.md)
 <!-- NAV_BOTTOM_END -->

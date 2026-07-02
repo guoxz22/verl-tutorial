@@ -1,7 +1,7 @@
 # 04 - 配置系统
 
 <!-- NAV_START -->
-> 导航： [上一篇：03 - 核心概念](03-core-concepts.md) | [返回目录](../README.md#完整目录) | [下一篇：05-1 - PPO 训练](../part1-engineering-training/05-algorithms/05-1-ppo.md)
+> 阅读： [← 03 - 核心概念](03-core-concepts.md) · [目录](../README.md#完整目录) · [05-1 - PPO 训练 →](../part1-engineering-training/05-algorithms/05-1-ppo.md)
 <!-- NAV_END -->
 
 verl 使用 Hydra 管理配置。学习 verl 配置有一个原则：**不要凭记忆写键名，优先查生成配置**。
@@ -212,5 +212,5 @@ trainer.total_training_steps=1 trainer.save_freq=-1 trainer.test_freq=-1 trainer
 ---
 
 <!-- NAV_BOTTOM_START -->
-> 导航： [上一篇：03 - 核心概念](03-core-concepts.md) | [返回目录](../README.md#完整目录) | [下一篇：05-1 - PPO 训练](../part1-engineering-training/05-algorithms/05-1-ppo.md)
+> 阅读： [← 03 - 核心概念](03-core-concepts.md) · [目录](../README.md#完整目录) · [05-1 - PPO 训练 →](../part1-engineering-training/05-algorithms/05-1-ppo.md)
 <!-- NAV_BOTTOM_END -->

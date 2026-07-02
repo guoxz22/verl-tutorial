@@ -8,7 +8,7 @@
 
 verl 是大模型后训练框架，核心目标是把策略模型、价值模型、参考模型、奖励函数/奖励模型、rollout 推理引擎和分布式训练后端组织成可扩展的 RLHF / Agentic RL / SFT 工作流。
 
-每篇章节的开头和结尾都提供“上一篇 / 返回目录 / 下一篇”导航。第一次阅读可以按目录顺序推进；有经验的读者也可以直接从下面的专题入口跳转。
+这一版仍然保持原有阅读方式：先用 Part0 建立整体认识，再按工程训练或研究扩展两条路线深入。每篇文章之间增加了轻量跳转，方便顺读，也方便查阅。
 
 ## 本版更新重点
 
@@ -37,10 +37,32 @@ verl 是大模型后训练框架，核心目标是把策略模型、价值模型
 
 ```text
 verl-tutorial/
-├── part0-foundation/              # 基础：概念、安装、快速上手、配置
-├── part1-engineering-training/    # 工程：算法、SFT、AgentRL、分布式、数据奖励、运维
-├── part2-research-extension/      # 研究：扩展点、自定义算法、Worker 修改、论文复现
-└── appendix/                      # 附录：配置速查、常见错误、资源索引
+│
+├── part0-foundation/              # 基础（必读）
+│   ├── 00-what-is-verl.md         #   verl 是什么
+│   ├── 01-installation.md         #   安装配置
+│   ├── 02-quick-start.md          #   快速上手
+│   ├── 03-core-concepts.md        #   核心概念
+│   └── 04-configuration.md        #   配置系统
+│
+├── part1-engineering-training/    # 工程训练（面向工程人员）
+│   ├── 05-algorithms/             #   内置算法使用
+│   ├── 06-sft-and-tuning/         #   SFT 与微调
+│   ├── 07-agent-rl/               #   AgentRL 训练
+│   ├── 08-distributed-training/   #   分布式训练
+│   ├── 09-data-and-reward/        #   数据与奖励
+│   └── 10-operations/             #   运维与监控
+│
+├── part2-research-extension/      # 研究扩展（面向研究人员）
+│   ├── 11-extension-overview.md   #   扩展机制总览
+│   ├── 12-custom-algorithm/       #   自定义算法组件
+│   ├── 13-modify-workers/         #   修改 Worker
+│   └── 14-paper-reproduction/     #   论文复现
+│
+└── appendix/                      # 附录
+    ├── A-config-reference.md      #   配置参数参考
+    ├── B-common-errors.md         #   常见错误
+    └── C-resources.md             #   进阶资源
 ```
 
 ## 阅读路径
@@ -63,6 +85,9 @@ verl-tutorial/
 5. [14 论文复现](#14-论文复现)：把论文拆成配置、代码、数据、验证四部分。
 
 ## 完整目录
+
+<details>
+<summary>点击展开全部章节链接</summary>
 
 ### Part0 基础
 
@@ -166,6 +191,8 @@ verl-tutorial/
 | A | 配置参数参考 | [进入](appendix/A-config-reference.md) |
 | B | 常见错误与解决 | [进入](appendix/B-common-errors.md) |
 | C | 进阶学习资源 | [进入](appendix/C-resources.md) |
+
+</details>
 
 ## 代码约定
 
